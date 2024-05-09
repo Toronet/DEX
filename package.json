@@ -25,6 +25,8 @@
     "typescript": "5.1.6"
   },
   "scripts": {
-    "postinstall": "yarn add "
+    "postinstall": "yarn install",
+    "vercel-build": "npm run prepare && next build",
+    "tailwind:css": "tailwindcss build ./styles/index.css -o ./styles/tailwind.css"
   }
 }
