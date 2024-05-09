@@ -1,8 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { ethers } from "./ethers-5.6.esm.min";
-import { AQT_TOKEN_ADDRESS, MT_TOKEN_ADDRESS, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI } from "./constants";
+import { ethers } from "ethers";
+import { AQT_TOKEN_ADDRESS, MT_TOKEN_ADDRESS, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI , ERC20_URI, Swap_URI} from "./constants";
 
 export default function DexApp() {
   const [txnHash, setTxnHash] = useState<string | null>(null);
@@ -23,67 +23,140 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const errorMessageRef = useRef<HTMLDivElement>(null);
   const [swapFromToken, setSwapFromToken] = useState<string>(""); // Initialize with empty string
   const [swapToToken, setSwapToToken] = useState<string>(""); // Initialize with empty string
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null); // Track selected wallet
 
 
   useEffect(() => {
     if (txnStatus === 'Success' && successMessageRef.current) {
       successMessageRef.current.style.display = 'block';
       setTimeout(() => {
-        successMessageRef.current.style.display = 'none';
+          if (successMessageRef.current) { // Check if successMessageRef.current is not null
+              successMessageRef.current.style.display = 'none'; // Change to 'none' to hide the message
+          }
       }, 5000); // Hide the message after 5 seconds
-    }
+  }
     if (txnStatus === 'Error' && errorMessageRef.current) {
       errorMessageRef.current.style.display = 'block';
       setTimeout(() => {
-        errorMessageRef.current.style.display = 'none';
+        if (errorMessageRef.current) { // Check if errorMessageRef.current is not null
+            errorMessageRef.current.style.display = 'none'; // Change to 'none' to hide the message
+        }
       }, 5000); // Hide the message after 5 seconds
     }
-  }, [txnStatus]
-);
-  
-  const connectMetaMask = async () => {
-    try {
-      // Check if MetaMask is installed and enabled
-      if (typeof window.ethereum !== 'undefined') {
-        // Request access to the user's Ethereum accounts
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-  
-        // Create a new ethers.js provider using the user's Ethereum provider (MetaMask)
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        setProvider(provider);
- 
-        const accounts = await provider.listAccounts();
-        setUserAddress(accounts[0]);
-        setIsConnected(true);
-        const shortAddr = `${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`;
-        setShortAddress(shortAddr);
-  
-      
-        if (connectButtonRef.current) {
-          connectButtonRef.current.innerHTML = ` ${shortAddr}`;
-        }
-      } else {
+  }, [txnStatus]);
 
-        if (connectButtonRef.current) {
-          connectButtonRef.current.innerHTML = 'Install MetaMask';
-        }
+  
+useEffect(() => {
+  // Handle wallet connection status
+  if (isConnected) {
+      setSelectedWallet(provider === (window as any).ethereum? 'MetaMask' : 'Toro Wallet');
+  } else {
+      setSelectedWallet(null);
+  }
+}, [isConnected, provider]);
+const connectMetaMask = async () => {
+  try {
+    // Check if MetaMask is installed and enabled
+    if (typeof (window as any).ethereum !== 'undefined') {
+      // Request access to the user's Ethereum accounts
+      await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+
+      // Create a new ethers.js provider using the user's Ethereum provider (MetaMask)
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+      setProvider(provider);
+
+      const accounts = await provider.listAccounts();
+      setUserAddress(accounts[0]);
+      setIsConnected(true);
+      const shortAddr = `${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`;
+      setShortAddress(shortAddr);
+
+
+      if (connectButtonRef.current) {
+        connectButtonRef.current.innerHTML = ` ${shortAddr}`;
       }
-    } catch (error) {
-      console.error('Error connecting to MetaMask:', error);
+    } else {
+
+      if (connectButtonRef.current) {
+        connectButtonRef.current.innerHTML = 'Install MetaMask';
+      }
     }
-  };
+  } catch (error) {
+    console.error('Error connecting to MetaMask:', error);
+  }
+};
 
   const connectToroWallet = async () => {
-    // ... (existing code)
-  };
-
-  const swapTokens = async () => {
-    try {
-      if (typeof window.ethereum === 'undefined') {
-        throw new Error("MetaMask not found");
-      }
+    // Prompt user for wallet address and password
+    const walletAddress = prompt("Enter Wallet Address:");
+    const password = prompt("Enter Password:");
   
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+    // Check if user entered both wallet address and password
+    if (!walletAddress || !password) {
+      alert("Please enter both Wallet Address and Password.");
+      return;
+    }
+  
+    // Prepare the message to be signed
+    const messageToSign = "Today is Monday";
+  
+    // Call the API to sign the message
+    fetch('https://testnet.toronet.org/api/keystore/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "op": "signMessage",
+        "params": [
+          {
+            "name": "addr",
+            "value": walletAddress
+          },
+          {
+            "name": "pwd",
+            "value": password
+          },
+          {
+            "name": "message",
+            "value": messageToSign
+          }
+        ]
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success === true && data.result) {
+        // If signing is successful, set user address and show success message
+        setUserAddress(walletAddress);
+        setIsConnected(true);
+        const shortAddr = `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`;
+        setShortAddress(shortAddr);
+        if (connectButtonRef.current) {
+          connectButtonRef.current.innerHTML = `Connected: ${shortAddr}`;
+        }
+        alert("Connected successfully!");
+      } else {
+        // If signing fails, show error message
+        alert("Connection failed. Please check your Wallet Address and Password.");
+      }
+    })
+    .catch(error => {
+      console.error('Error connecting to Toro Wallet:', error);
+      alert("Toronet Address Or Password is Incorrect . Please try again later.");
+    });
+  };
+  
+
+  const swapTokensMetamask = async () => {
+    try {
+     
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
       const signer = provider.getSigner();
       const contract = new ethers.Contract(
         Swap_Contract_Address,
@@ -127,9 +200,9 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
     }
   };
   
-  const addLiquidity = async () => {
-    if (typeof window.ethereum !== 'undefined') {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const addLiquidityMetamask = async () => {
+    if (typeof (window as any).ethereum !== 'undefined') {
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
       const signer = provider.getSigner();
       const address = await signer.getAddress();
 
@@ -174,82 +247,295 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
   };
 
 
-  // const addLiquidity = async () => { // for toronetWallet
-  //   console.log(" Started !!!")
-  //   //const encodedABI = encodeURIComponent(ERC20_ABI);
-  //   // This is approving for MT token
-  //   fetch('https://testnet.toronet.org/api/keystore/', {
-  //     method: 'POST',
-  //     headers: {
-  //         'Content-Type': 'application/json'
-  //     },
+  const addLiquidity = async () => { // for toronetWallet
+    
+    if (typeof (window as any).ethereum !== 'undefined') {
+      addLiquidityMetamask();
+  } else   {
+let address = Swap_Contract_Address;
+let amount1 = ethers.utils.parseEther(addLiquidityAmount1.toString());
+let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
+ let argument = `${address}|${amount2}`;
+    fetch('https://testnet.toronet.org/api/keystore/', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
    
-  //     body: JSON.stringify({
-  //         "op": "callContractFunction",
-  //         "params": [
-  //             {
-  //                 "name": "addr",
-  //                 "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"
-  //             },
-  //             {
-  //                 "name": "pwd",
-  //                 "value": "Salem12345"
-  //             },
-  //             {
-  //                 "name": "contractaddress",
-  //                 "value": "0xA51B776d69b7a150aE30C3eaCfBa69d94fED3b5f"
-  //             },
-  //             {
-  //                 "name": "functionname",
-  //                 "value": "approve"
-  //             },
-  //             {
-  //                 "name": "functionarguments",
-  //                 "value": "0x74d9fCA6264A72B96Eb349afF15eee0Bd32534D4|100000000000000000000"
-  //             },
-  //             {
-  //                 "name": "abi",
-  //                 "value": "%20%5B%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%5D%2C%0A%09%09%22stateMutability%22%3A%20%22nonpayable%22%2C%0A%09%09%22type%22%3A%20%22constructor%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22anonymous%22%3A%20false%2C%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22indexed%22%3A%20true%2C%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22owner%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22indexed%22%3A%20true%2C%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22spender%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22indexed%22%3A%20false%2C%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22value%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22Approval%22%2C%0A%09%09%22type%22%3A%20%22event%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22anonymous%22%3A%20false%2C%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22indexed%22%3A%20true%2C%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22previousOwner%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22indexed%22%3A%20true%2C%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22newOwner%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22OwnershipTransferred%22%2C%0A%09%09%22type%22%3A%20%22event%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22anonymous%22%3A%20false%2C%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22indexed%22%3A%20true%2C%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22from%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22indexed%22%3A%20true%2C%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22to%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22indexed%22%3A%20false%2C%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22value%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22Transfer%22%2C%0A%09%09%22type%22%3A%20%22event%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22owner%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22spender%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22allowance%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22view%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22spender%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22amount%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22approve%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22bool%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22bool%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22nonpayable%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22account%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22balanceOf%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22view%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%5D%2C%0A%09%09%22name%22%3A%20%22decimals%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint8%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint8%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22view%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22spender%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22subtractedValue%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22decreaseAllowance%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22bool%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22bool%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22nonpayable%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22spender%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22addedValue%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22increaseAllowance%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22bool%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22bool%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22nonpayable%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%5D%2C%0A%09%09%22name%22%3A%20%22name%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22string%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22string%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22view%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%5D%2C%0A%09%09%22name%22%3A%20%22owner%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22view%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%5D%2C%0A%09%09%22name%22%3A%20%22renounceOwnership%22%2C%0A%09%09%22outputs%22%3A%20%5B%5D%2C%0A%09%09%22stateMutability%22%3A%20%22nonpayable%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%5D%2C%0A%09%09%22name%22%3A%20%22symbol%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22string%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22string%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22view%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%5D%2C%0A%09%09%22name%22%3A%20%22totalSupply%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22view%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22recipient%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22amount%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22transfer%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22bool%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22bool%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22nonpayable%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22sender%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22recipient%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%2C%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22uint256%22%2C%0A%09%09%09%09%22name%22%3A%20%22amount%22%2C%0A%09%09%09%09%22type%22%3A%20%22uint256%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22transferFrom%22%2C%0A%09%09%22outputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22bool%22%2C%0A%09%09%09%09%22name%22%3A%20%22%22%2C%0A%09%09%09%09%22type%22%3A%20%22bool%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22stateMutability%22%3A%20%22nonpayable%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%2C%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%0A%09%09%09%7B%0A%09%09%09%09%22internalType%22%3A%20%22address%22%2C%0A%09%09%09%09%22name%22%3A%20%22newOwner%22%2C%0A%09%09%09%09%22type%22%3A%20%22address%22%0A%09%09%09%7D%0A%09%09%5D%2C%0A%09%09%22name%22%3A%20%22transferOwnership%22%2C%0A%09%09%22outputs%22%3A%20%5B%5D%2C%0A%09%09%22stateMutability%22%3A%20%22nonpayable%22%2C%0A%09%09%22type%22%3A%20%22function%22%0A%09%7D%0A%5D%0A"
-  //             }
-  //           ]
-  //     })
-  // })
-  // .then(response => {
-  //     if (!response.ok) { 
+      body: JSON.stringify({
+          "op": "callContractFunction",
+          "params": [
+              {
+                  "name": "addr",
+                  "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"  // this should be the address pf the user passed in 
+              },
+              {
+                  "name": "pwd",
+                  "value": "Salem12345" // this should be the password
+              },
+              {
+                  "name": "contractaddress",
+                  "value": MT_TOKEN_ADDRESS
+              },
+              {
+                  "name": "functionname",
+                  "value": "approve"
+              },
+              {
+                  "name": "functionarguments",
+                  "value": argument
+              },
+              {
+                  "name": "abi",
+                  "value": ERC20_URI
+              }
+            ]
+      })
+  })
+  .then(response => {
+      if (!response.ok) { 
 
-  //       if(response.status == 204 || response.status ==200  ){
-  //         console.log("okay")
-  //         setTxnStatus('Success');
-  //       }
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //     }
-  //     return response.json();
-  // })
-  // .then(data => {
-  //     // Check the response data for success
-  //     if (data.success === true) {
-  //         console.log("Function call successful");
-  //     } else {
-  //         console.error("Function call failed");
-  //           setTxnStatus('Success');
+        if(response.status == 204 || response.status ==200  ){
+          console.log("okay")
+          setTxnStatus('Success');
+        }
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+  })
+  .then(data => {
+      // Check the response data for success
+      if (data.success === true) {
+          console.log("Function call successful");
+      } else {
+          console.error("Function call failed");
+            setTxnStatus('Success');
           
-  //     }
-  // })
-  // .catch(error => {
-  //     console.error('Error:', error);
-  // });
+      }
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
 
 
-  // };
+
+  // Approval for AQT token
+
+  argument = `${address}|${amount1}`;
+  fetch('https://testnet.toronet.org/api/keystore/', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+   
+      body: JSON.stringify({
+          "op": "callContractFunction",
+          "params": [
+              {
+                  "name": "addr",
+                  "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"  // this should be the address pf the user passed in 
+              },
+              {
+                  "name": "pwd",
+                  "value": "Salem12345" // this should be the password
+              },
+              {
+                  "name": "contractaddress",
+                  "value": AQT_TOKEN_ADDRESS
+              },
+              {
+                  "name": "functionname",
+                  "value": "approve"
+              },
+              {
+                  "name": "functionarguments",
+                  "value": argument
+              },
+              {
+                  "name": "abi",
+                  "value": ERC20_URI
+              }
+            ]
+      })
+  })
+  .then(response => {
+      if (!response.ok) { 
+
+        if(response.status == 204 || response.status ==200  ){
+          console.log("okay")
+          setTxnStatus('Success');
+        }
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+  })
+  .then(data => {
+      // Check the response data for success
+      if (data.success === true) {
+          console.log("Function call successful");
+      } else {
+          console.error("Function call failed");
+            setTxnStatus('Success');
+          
+      }
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+
+
+  // // Now addLiquidity
+
+  let argument_addLiquidity = `${amount1}|${amount2}`;
+  fetch('https://testnet.toronet.org/api/keystore/', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+   
+      body: JSON.stringify({
+          "op": "callContractFunction",
+          "params": [
+              {
+                  "name": "addr",
+                  "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"  // this should be the address pf the user passed in 
+              },
+              {
+                  "name": "pwd",
+                  "value": "Salem12345" // this should be the password
+              },
+              {
+                  "name": "contractaddress",
+                  "value": Swap_Contract_Address
+              },
+              {
+                  "name": "functionname",
+                  "value": "addLiquidity"
+              },
+              {
+                  "name": "functionarguments",
+                  "value": argument_addLiquidity
+              },
+              {
+                  "name": "abi",
+                  "value": Swap_URI
+              }
+            ]
+      })
+  })
+  .then(response => {
+      if (!response.ok) { 
+
+        if(response.status == 204 || response.status ==200  ){
+          console.log("okay")
+          setTxnStatus('Success');
+        }
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+  })
+  .then(data => {
+      // Check the response data for success
+      if (data.success === true) {
+          console.log("Function call successful");
+      } else {
+          console.error("Function call failed");
+            setTxnStatus('Success');
+          
+      }
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+
+  };
+
+};
+
+  const swapToken = async () => {
+    if (typeof (window as any).ethereum !== 'undefined') {
+      addLiquidityMetamask();
+  } else if (selectedWallet === 'Toro Wallet') {
+
+    let argument_SwapAQT_TokensForA =  `${ethers.utils.parseEther(swapAmount.toString())}`
+    fetch('https://testnet.toronet.org/api/keystore/', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+   
+      body: JSON.stringify({
+          "op": "callContractFunction",
+          "params": [
+              {
+                  "name": "addr",
+                  "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"  // this should be the address pf the user passed in 
+              },
+              {
+                  "name": "pwd",
+                  "value": "Salem12345" // this should be the password
+              },
+              {
+                  "name": "contractaddress",
+                  "value": Swap_Contract_Address
+              },
+              {
+                  "name": "functionname",
+                  "value": "swapAQT_TokenForA"
+              },
+              {
+                  "name": "functionarguments",
+                  "value": argument_SwapAQT_TokensForA
+              },
+              {
+                  "name": "abi",
+                  "value": Swap_URI
+              }
+            ]
+      })
+  })
+  .then(response => {
+      if (!response.ok) { 
+
+        if(response.status == 204 || response.status ==200  ){
+          console.log("okay")
+          setTxnStatus('Success');
+        }
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+  })
+  .then(data => {
+      // Check the response data for success
+      if (data.success === true) {
+          console.log("Function call successful");
+      } else {
+          console.error("Function call failed");
+            setTxnStatus('Success');
+          
+      }
+  
+     
+    })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+
+  }
+  else {
+    console.log("No Wallet Connected")
+  }
+}
+  
 
 
   const previewAmount = async () => {
     try {
-      if (typeof window.ethereum === 'undefined') {
+      if (typeof (window as any).ethereum === 'undefined') {
         throw new Error("MetaMask not found");
       }
   
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
       const signer = provider.getSigner();
       const contract = new ethers.Contract(
         Swap_Contract_Address,
@@ -327,7 +613,7 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
             placeholder="Enter Amount to Swap"
           />
           <button
-            onClick={swapTokens}
+            onClick={swapToken}
             className="w-full py-2 px-4 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 mt-2"
           >
             Swap
