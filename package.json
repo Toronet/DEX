@@ -25,6 +25,6 @@
     "typescript": "5.1.6"
   },
   "scripts": {
-    "postinstall": "yarn install "
+    "postinstall": "yarn add "
   }
 }
