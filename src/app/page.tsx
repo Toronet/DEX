@@ -1,7 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { ethers } from "./ethers-5.6.esm.min.jsx";
+//import { ethers } from "./ethers-5.6.esm.min.jsx";
+//import { ethers } from "ethers";
 import { tEGB,tKSH,tNGN,tZar,tUSD,tEURO,tPOUND,tETH,ESPEES,ASPR, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI , ERC20_URI, Swap_URI,tokenAddresses} from "./constants";
 
 
