@@ -1,8 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { ethers } from "ethers";
-import { AQT_TOKEN_ADDRESS, MT_TOKEN_ADDRESS, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI , ERC20_URI, Swap_URI} from "./constants";
+import { ethers } from "./ethers-5.6.esm.min.jsx";
+import { tEGB,tKSH,tNGN,tZar,tUSD,tEURO,tPOUND,tETH,ESPEES,ASPR, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI , ERC20_URI, Swap_URI,tokenAddresses} from "./constants";
+
 
 export default function DexApp() {
   const [txnHash, setTxnHash] = useState<string | null>(null);
@@ -18,6 +19,7 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const [addLiquidityAmount2, setAddLiquidityAmount2] = useState(0);
   const [estimatedTokenShares, setestimatedTokenShares] = useState(0);
   const [userAddress, setUserAddress] = useState("");
+  let  [userPassword,setPassword] =useState("");
   const [shortAddress, setShortAddress] = useState("");
   const successMessageRef = useRef<HTMLDivElement>(null);
   const errorMessageRef = useRef<HTMLDivElement>(null);
@@ -46,14 +48,9 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
   }, [txnStatus]);
 
   
-useEffect(() => {
-  // Handle wallet connection status
-  if (isConnected) {
-      setSelectedWallet(provider === (window as any).ethereum? 'MetaMask' : 'Toro Wallet');
-  } else {
-      setSelectedWallet(null);
-  }
-}, [isConnected, provider]);
+
+
+
 const connectMetaMask = async () => {
   try {
     // Check if MetaMask is installed and enabled
@@ -85,75 +82,59 @@ const connectMetaMask = async () => {
     console.error('Error connecting to MetaMask:', error);
   }
 };
-
-  const connectToroWallet = async () => {
-    // Prompt user for wallet address and password
-    const walletAddress = prompt("Enter Wallet Address:");
-    const password = prompt("Enter Password:");
-  
-    // Check if user entered both wallet address and password
-    if (!walletAddress || !password) {
-      alert("Please enter both Wallet Address and Password.");
-      return;
-    }
-  
-    // Prepare the message to be signed
-    const messageToSign = "Today is Monday";
-  
-    // Call the API to sign the message
-    fetch('https://testnet.toronet.org/api/keystore/', {
+const connectToroWallet = async () => {
+   const walletAddress = prompt("Enter Wallet Address:");
+ const  password = prompt("Enter Password:");
+  if (!walletAddress || !password) {
+    alert("Please enter both Wallet Address and Password.");
+    return;
+  }
+  const messageToSign = "Signature";
+  try {
+    const response = await fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         "op": "signMessage",
         "params": [
-          {
-            "name": "addr",
-            "value": walletAddress
-          },
-          {
-            "name": "pwd",
-            "value": password
-          },
-          {
-            "name": "message",
-            "value": messageToSign
-          }
+          { "name": "addr", "value": walletAddress },
+          { "name": "pwd", "value": password },
+          { "name": "message", "value": messageToSign }
         ]
       })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success === true && data.result) {
-        // If signing is successful, set user address and show success message
-        setUserAddress(walletAddress);
-        setIsConnected(true);
-        const shortAddr = `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`;
-        setShortAddress(shortAddr);
-        if (connectButtonRef.current) {
-          connectButtonRef.current.innerHTML = `Connected: ${shortAddr}`;
-        }
-        alert("Connected successfully!");
-      } else {
-        // If signing fails, show error message
-        alert("Connection failed. Please check your Wallet Address and Password.");
-      }
-    })
-    .catch(error => {
-      console.error('Error connecting to Toro Wallet:', error);
-      alert("Toronet Address Or Password is Incorrect . Please try again later.");
     });
-  };
-  
 
-  const swapTokensMetamask = async () => {
+    if (!response.ok) {
+      throw new Error(response.status);
+    }
+
+    const data = await response.json();
+    console.log(data.result)
+
+    if (data.result) {
+      // Save password and user address to localStorage
+      localStorage.setItem('toroWalletPassword', password);
+      localStorage.setItem('toroWalletAddress', walletAddress);
+      
+      setUserAddress(walletAddress);
+      setPassword(password)
+      setIsConnected(true);
+      const shortAddr = `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`;
+      setShortAddress(shortAddr);
+      if (connectButtonRef.current) {
+        connectButtonRef.current.innerHTML = `Connected: ${shortAddr}`;
+      }
+      alert("Connected successfully!");
+    } else {
+      alert("Connection failed. Please check your Wallet Address and Password.");
+    }
+  } catch (error) {
+    console.error('Error connecting to Toro Wallet:', error);
+    alert("Toronet Address Or Password is Incorrect. Please try again later.");
+  }
+};
+
+  /* const swapTokensMetamask = async () => {
     try {
      
       const provider = new ethers.providers.Web3Provider((window as any).ethereum);
@@ -245,17 +226,20 @@ const connectMetaMask = async () => {
  
       
   };
+*/
 
-
-  const addLiquidity = async () => { // for toronetWallet
+  const addLiquidity = async () => {  // for toronetWallet
+   // for first toke
     
-    if (typeof (window as any).ethereum !== 'undefined') {
-      addLiquidityMetamask();
-  } else   {
+  {
 let address = Swap_Contract_Address;
 let amount1 = ethers.utils.parseEther(addLiquidityAmount1.toString());
 let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
- let argument = `${address}|${amount2}`;
+let token1 = tokenAddresses[addLiquidityToken1]
+let token2 = tokenAddresses[addLiquidityToken2]
+
+
+ let argument = `${address}|${amount1}`;
     fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
@@ -267,15 +251,15 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
           "params": [
               {
                   "name": "addr",
-                  "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"  // this should be the address pf the user passed in 
+                  "value": userAddress  // this should be the address pf the user passed in e.g //0x021eae324e90cf49ebb915d14f8cd37d2954f0f4
               },
               {
                   "name": "pwd",
-                  "value": "Salem12345" // this should be the password
+                  "value": userPassword // this should be the password e.g//Salem12345
               },
               {
                   "name": "contractaddress",
-                  "value": MT_TOKEN_ADDRESS
+                  "value": token1
               },
               {
                   "name": "functionname",
@@ -319,9 +303,9 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
 
 
 
-  // Approval for AQT token
+  // Approval for Second token
 
-  argument = `${address}|${amount1}`;
+  argument = `${address}|${amount2}`;
   fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
@@ -333,15 +317,15 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
           "params": [
               {
                   "name": "addr",
-                  "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"  // this should be the address pf the user passed in 
+                  "value": userAddress  // this should be the address pf the user passed in 
               },
               {
                   "name": "pwd",
-                  "value": "Salem12345" // this should be the password
+                  "value": userPassword // this should be the password
               },
               {
                   "name": "contractaddress",
-                  "value": AQT_TOKEN_ADDRESS
+                  "value": token2
               },
               {
                   "name": "functionname",
@@ -383,10 +367,10 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
       console.error('Error:', error);
   });
 
-
+console.log("Done For 2 tokens")
   // // Now addLiquidity
 
-  let argument_addLiquidity = `${amount1}|${amount2}`;
+  let argument_addLiquidity = `${token1}|${amount1}|${token2}|${amount2}`;
   fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
@@ -398,11 +382,11 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
           "params": [
               {
                   "name": "addr",
-                  "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"  // this should be the address pf the user passed in 
+                  "value": userAddress  // this should be the address pf the user passed in 
               },
               {
                   "name": "pwd",
-                  "value": "Salem12345" // this should be the password
+                  "value": userPassword // this should be the password
               },
               {
                   "name": "contractaddress",
@@ -449,15 +433,21 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
   });
 
   };
-
 };
 
-  const swapToken = async () => {
-    if (typeof (window as any).ethereum !== 'undefined') {
-      addLiquidityMetamask();
-  } else if (selectedWallet === 'Toro Wallet') {
 
-    let argument_SwapAQT_TokensForA =  `${ethers.utils.parseEther(swapAmount.toString())}`
+
+  const swapToken = async () => { // swap tokens on toronet
+    
+    let amount = (ethers.utils.parseEther(swapAmount.toString())).toString();
+    console.log(swapFromToken)
+let token1 = tokenAddresses[swapFromToken]
+console.log(token1)
+let token2 = tokenAddresses[swapToToken]
+
+    {
+
+    let argument_Swap=  `${token1}|${token2}|${amount}`
     fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
@@ -469,11 +459,11 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
           "params": [
               {
                   "name": "addr",
-                  "value": "0x021eae324e90cf49ebb915d14f8cd37d2954f0f4"  // this should be the address pf the user passed in 
+                  "value": userAddress  // this should be the address pf the user passed in 
               },
               {
                   "name": "pwd",
-                  "value": "Salem12345" // this should be the password
+                  "value": userPassword // this should be the password
               },
               {
                   "name": "contractaddress",
@@ -481,11 +471,11 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
               },
               {
                   "name": "functionname",
-                  "value": "swapAQT_TokenForA"
+                  "value": "swap"
               },
               {
                   "name": "functionarguments",
-                  "value": argument_SwapAQT_TokensForA
+                  "value": argument_Swap
               },
               {
                   "name": "abi",
@@ -522,132 +512,95 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
   });
 
   }
-  else {
-    console.log("No Wallet Connected")
-  }
+  
 }
   
 
-
-  const previewAmount = async () => {
-    try {
-      if (typeof (window as any).ethereum === 'undefined') {
-        throw new Error("MetaMask not found");
+const previewAmount = async () => {
+  try {
+    const response = await fetch('http://testnet.toronet.org/api/token/toro/cl?op=calculatetxfee&params[0][name]=client&params[0][value]=0xf3cdfc4a1dce2d98ff878971626b798279954c43&params[1][name]=val&params[1][value]=2', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
       }
-  
-      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
-      const signer = provider.getSigner();
-      const contract = new ethers.Contract(
-        Swap_Contract_Address,
-        Swap_Contract_ABI,
-        signer
-      );
-  
-      // Choose the appropriate calculation function
-      let estimatedShares;
-     // if (swapFromToken === "AQT") {
-        console.log("Using AQT calculation function");
-        estimatedShares = await contract.calculateMT_TokenForB(ethers.utils.parseEther("1".toString()));
-        console.log(` Estimated Shared ${estimatedShares}`);
-    //  } else if (swapFromToken === "MT") {
-        console.log("Using MT calculation function");
-       // estimatedShares = await contract.calculateAQT_TokenForA(ethers.utils.parseEther(swapAmount.toString()));
-    //  } else {
-        throw new Error("Invalid token selected");
-     // }
-  
-     // setEstimatedTokenShares(estimatedShares);
-    } catch (error) {
-      console.error(error);
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
-  };
-  
+
+    const data = await response.json();
+    // Handle the response data here
+    console.log(data);
+    setestimatedTokenShares(data.message)
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800 dark:text-white">
       <div className="p-6 shadow-md bg-white dark:bg-gray-700 rounded-md w-full max-w-md">
         <h1 className="text-2xl font-semibold mb-4">DeX - Decentralized Exchange</h1>
+        
+
+
+        
+        
+        
         <div className="flex justify-between mb-4">
-          <button
+          {/* <button
             onClick={connectMetaMask}
             className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 mr-2"
           >
             {isConnected ? `Connected: ${shortAddress}` : "Connect MetaMask"}
-          </button>
+          </button> */}
           <button
             onClick={connectToroWallet}
-            className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ml-2"
-          >
-            Connect Toro Wallet
+            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+         >
+           {isConnected ? `Connected: ${shortAddress}` : "Connect To Toronet "}
           </button>
         </div>
 
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2">Swap Tokens</h2>
-          <div className="flex justify-between">
-            <select
-              value={swapFromToken}
-              onChange={(e) => setSwapFromToken(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded text-black dark:bg-gray-600 dark:text-white"
-            >
-              <option value="">Select Token</option>
-              <option value="token1">AQT</option>
-              <option value="token2">MT</option>
-            </select>
-            
-            <select
-              value={swapToToken}
-              onChange={(e) => setSwapToToken(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded text-black dark:bg-gray-600 dark:text-white"
-            >
-              <option value="">Select Token</option>
-              <option value="token1">AQT</option>
-              <option value="token2">MT</option>
-            </select>
-          </div>
-          <input
-            type="number"
-            value={swapAmount}
-            onChange={(e) => setSwapAmount(parseInt(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded text-black dark:bg-gray-600 dark:text-white mt-2"
-            placeholder="Enter Amount to Swap"
-          />
-          <button
-            onClick={swapToken}
-            className="w-full py-2 px-4 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 mt-2"
-          >
-            Swap
-          </button>
-        </div>
 
-         <button
-            onClick={previewAmount}
-            className="w-full py-2 px-4 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 mt-2"
-          >
-            Preview
-          </button>
-          <p className="text-center mt-2">Estimated Token To Recieve: {estimatedTokenShares}</p>
-
-        <div className="mb-4">
+            <div className="mb-4">
           <h2 className="text-lg font-semibold mb-2">Add Liquidity</h2>
           <div className="flex justify-between">
             <select
               value={addLiquidityToken1}
               onChange={(e) => setAddLiquidityToken1(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded text-black dark:bg-gray-600 dark:text-white"
+              className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
             >
-              <option value="">Select AQT</option>
-              <option value="token1">AQT</option>
-              <option value="token2">MT</option>
+      <option value="">Select Token</option>
+      <option value="tEGB">tEGB</option>
+      <option value="tKSH">τKSH</option>
+      <option value="tNGN">τNGN</option>
+      <option value="tZAR">τZAR</option>
+      <option value="tUSD">τUSD</option>
+      <option value="tEURO">τEURO</option>
+      <option value="tPOUND">τPOUND</option>
+      <option value="tETH">τETH</option>
+      <option value="ESPEES">ESPEES</option>
+      <option value="ASPR">ASPR</option>
             </select>
             <select
               value={addLiquidityToken2}
               onChange={(e) => setAddLiquidityToken2(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded text-black dark:bg-gray-600 dark:text-white"
+              className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
             >
-              <option value="">Select MT</option>
-              <option value="token1">AQT</option>
-              <option value="token2">MT</option>
+      <option value="">Select Token</option>
+      <option value="tEGB">tEGB</option>
+      <option value="tKSH">τKSH</option>
+      <option value="tNGN">τNGN</option>
+      <option value="tZAR">τZAR</option>
+      <option value="tUSD">τUSD</option>
+      <option value="tEURO">τEURO</option>
+      <option value="tPOUND">τPOUND</option>
+      <option value="tETH">τETH</option>
+      <option value="ESPEES">ESPEES</option>
+      <option value="ASPR">ASPR</option>
             </select>
           </div>
           <div className="flex justify-between mt-2">
@@ -655,14 +608,14 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
               type="number"
               value={addLiquidityAmount1}
               onChange={(e) => setAddLiquidityAmount1(parseInt(e.target.value))}
-              className="w-full p-2 border border-gray-300 rounded text-black dark:bg-gray-600 dark:text-white"
+              className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
               placeholder="Enter Amount 1"
             />
             <input
               type="number"
               value={addLiquidityAmount2}
               onChange={(e) => setAddLiquidityAmount2(parseInt(e.target.value))}
-              className="w-full p-2 border border-gray-300 rounded text-black dark:bg-gray-600 dark:text-white"
+              className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
               placeholder="Enter Amount 2"
             />
           </div>
@@ -670,12 +623,77 @@ let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
           <button
             onClick={addLiquidity}
             
-            className="w-full py-2 px-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75 mt-2"
-          >
+            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+>
             Add Liquidity
 
           </button>
         </div>
+
+
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold mb-2">Swap Tokens</h2>
+          <div className="flex justify-between">
+            <select
+              value={swapFromToken}
+              onChange={(e) => setSwapFromToken(e.target.value)}
+              className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+            >
+                 <option value="">Swap From</option>
+      <option value="tEGB">tEGB</option>
+      <option value="tKSH">τKSH</option>
+      <option value="tNGN">τNGN</option>
+      <option value="tZAR">τZAR</option>
+      <option value="tUSD">τUSD</option>
+      <option value="tEURO">τEURO</option>
+      <option value="tPOUND">τPOUND</option>
+      <option value="tETH">τETH</option>
+      <option value="ESPEES">ESPEES</option>
+      <option value="ASPR">ASPR</option>
+            </select>
+            
+            <select
+              value={swapToToken}
+              onChange={(e) => setSwapToToken(e.target.value)}
+              className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+            >
+    <option value="">Swap To</option>
+      <option value="tEGB">tEGB</option>
+      <option value="tKSH">τKSH</option>
+      <option value="tNGN">τNGN</option>
+      <option value="tZAR">τZAR</option>
+      <option value="tUSD">τUSD</option>
+      <option value="tEURO">τEURO</option>
+      <option value="tPOUND">τPOUND</option>
+      <option value="tETH">τETH</option>
+      <option value="ESPEES">ESPEES</option>
+      <option value="ASPR">ASPR</option>
+            </select>
+          </div>
+          <input
+            type="number"
+            value={swapAmount}
+            onChange={(e) => setSwapAmount(parseInt(e.target.value))}
+            className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+            placeholder="Enter Amount to Swap"
+          />
+          <button
+            onClick={swapToken}
+            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+            >
+            Swap
+          </button>
+        </div>
+
+         <button
+            onClick={previewAmount}
+            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+>
+            Preview
+          </button>
+          <p className="text-center mt-2"> {estimatedTokenShares}</p>
+
+      
           {/* Success and Error Messages */}
           <div ref={successMessageRef} className="fixed top-0 left-0 w-full bg-green-500 text-white p-4 rounded-md text-center mb-4" style={{ display: 'none' }}>
         Transaction Successful 🎉🎊!
