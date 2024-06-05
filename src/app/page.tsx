@@ -11,7 +11,7 @@ export default function DexApp() {
 const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);
+//  const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);
 
   const [swapAmount, setSwapAmount] = useState(0);
   const [addLiquidityToken1, setAddLiquidityToken1] = useState("");
@@ -234,8 +234,9 @@ const connectToroWallet = async () => {
     
   {
 let address = Swap_Contract_Address;
-let amount1 = ethers.utils.parseEther(addLiquidityAmount1.toString());
-let amount2 =  ethers.utils.parseEther(addLiquidityAmount2.toString());
+let amount1 = (addLiquidityAmount1 *1e18);
+
+let amount2 =  (addLiquidityAmount2 *1e18);
 let token1 = tokenAddresses[addLiquidityToken1]
 let token2 = tokenAddresses[addLiquidityToken2]
 
@@ -440,8 +441,9 @@ console.log("Done For 2 tokens")
 
   const swapToken = async () => { // swap tokens on toronet
     
-    let amount = (ethers.utils.parseEther(swapAmount.toString())).toString();
-    console.log(swapFromToken)
+    let amount = (((swapAmount.toString()))*1e18);
+
+    console.log(amount)
 let token1 = tokenAddresses[swapFromToken]
 console.log(token1)
 let token2 = tokenAddresses[swapToToken]
