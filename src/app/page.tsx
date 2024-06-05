@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 //import { ethers } from "./ethers-5.6.esm.min.jsx";
 //import { ethers } from "ethers";
 import { tEGB,tKSH,tNGN,tZar,tUSD,tEURO,tPOUND,tETH,ESPEES,ASPR, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI , ERC20_URI, Swap_URI,tokenAddresses} from "./constants";
-
+type TokenKeys = keyof typeof tokenAddresses;
 
 export default function DexApp() {
   const [txnHash, setTxnHash] = useState<string | null>(null);
@@ -106,7 +106,7 @@ const connectToroWallet = async () => {
     });
 
     if (!response.ok) {
-      throw new Error(response.status);
+      throw new Error(response.status.toString());
     }
 
     const data = await response.json();
@@ -237,9 +237,8 @@ let address = Swap_Contract_Address;
 let amount1 = (addLiquidityAmount1 *1e18);
 
 let amount2 =  (addLiquidityAmount2 *1e18);
-let token1 = tokenAddresses[addLiquidityToken1]
-let token2 = tokenAddresses[addLiquidityToken2]
-
+let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
+let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
 
  let argument = `${address}|${amount1}`;
     fetch('https://testnet.toronet.org/api/keystore/', {
@@ -441,12 +440,13 @@ console.log("Done For 2 tokens")
 
   const swapToken = async () => { // swap tokens on toronet
     
-    let amount = (((swapAmount.toString()))*1e18);
+    let amount = ((swapAmount)*1e18);
 
     console.log(amount)
-let token1 = tokenAddresses[swapFromToken]
+let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
+
 console.log(token1)
-let token2 = tokenAddresses[swapToToken]
+let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
 
     {
 

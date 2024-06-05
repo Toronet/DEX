@@ -24,7 +24,7 @@ export const tokenAddresses = {
     "ASPR": "0x6c2A5ED4938CaC04F70A7ACF1ba1b1522de75811"
 };
 
-
+ 
 export const ERC20_ABI = [
 	{
 		"inputs": [],
