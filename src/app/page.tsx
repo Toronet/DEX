@@ -52,37 +52,37 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
 
 
 
-const connectMetaMask = async () => {
-  try {
-    // Check if MetaMask is installed and enabled
-    if (typeof (window as any).ethereum !== 'undefined') {
-      // Request access to the user's Ethereum accounts
-      await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+// const connectMetaMask = async () => {
+//   try {
+//     // Check if MetaMask is installed and enabled
+//     if (typeof (window as any).ethereum !== 'undefined') {
+//       // Request access to the user's Ethereum accounts
+//       await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
 
-      // Create a new ethers.js provider using the user's Ethereum provider (MetaMask)
-      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
-      setProvider(provider);
+//       // Create a new ethers.js provider using the user's Ethereum provider (MetaMask)
+//       // const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+//       // setProvider(provider);
 
-      const accounts = await provider.listAccounts();
-      setUserAddress(accounts[0]);
-      setIsConnected(true);
-      const shortAddr = `${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`;
-      setShortAddress(shortAddr);
+//       const accounts = await provider.listAccounts();
+//       setUserAddress(accounts[0]);
+//       setIsConnected(true);
+//       const shortAddr = `${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`;
+//       setShortAddress(shortAddr);
 
 
-      if (connectButtonRef.current) {
-        connectButtonRef.current.innerHTML = ` ${shortAddr}`;
-      }
-    } else {
+//       if (connectButtonRef.current) {
+//         connectButtonRef.current.innerHTML = ` ${shortAddr}`;
+//       }
+//     } else {
 
-      if (connectButtonRef.current) {
-        connectButtonRef.current.innerHTML = 'Install MetaMask';
-      }
-    }
-  } catch (error) {
-    console.error('Error connecting to MetaMask:', error);
-  }
-};
+//       if (connectButtonRef.current) {
+//         connectButtonRef.current.innerHTML = 'Install MetaMask';
+//       }
+//     }
+//   } catch (error) {
+//     console.error('Error connecting to MetaMask:', error);
+//   }
+// };
 const connectToroWallet = async () => {
    const walletAddress = prompt("Enter Wallet Address:");
  const  password = prompt("Enter Password:");
