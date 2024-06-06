@@ -83,7 +83,7 @@ const connectToroWallet = async () => {
     }
 
     const data = await response.json();
-    console.log(data.result)
+
 
     if (data.result) {
       // Save password and user address to localStorage
@@ -206,7 +206,7 @@ async function addSecondToToLiquidity(){
    
   try{
   
-    let txnOne  = await fetch(getApiUrl(apiName1), {
+    fetch(getApiUrl(apiName1), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -288,7 +288,7 @@ let apiName1 =  tokenAPIName[addLiquidityToken1 as APInames];
 
 try{
 
-  let txnOne  = await fetch(getApiUrl(apiName1), {
+  fetch(getApiUrl(apiName1), {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -364,7 +364,7 @@ let apiName1 =  tokenAPIName[swapToToken as APInames];
 
 try{
 
-  let txnOne  = await fetch(getApiUrl(apiName1), {
+   fetch(getApiUrl(apiName1), {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -443,7 +443,7 @@ let apiName1 =  tokenAPIName[swapFromToken as APInames];
 
 try{
 
-  let txnOne  = await fetch(getApiUrl(apiName1), {
+ (getApiUrl(apiName1), {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
