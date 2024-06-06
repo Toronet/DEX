@@ -1,12 +1,18 @@
+
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
-//import { ethers } from "./ethers-5.6.esm.min.jsx";
-//import { ethers } from "ethers";
-import { tEGB,tKSH,tNGN,tZar,tUSD,tEURO,tPOUND,tETH,ESPEES,ASPR, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI , ERC20_URI, Swap_URI,tokenAddresses} from "./constants";
+
+import React, { useState, useEffect, useRef } from "react";
+import { ethers } from "./ethers-5.6.esm.min";
+import { tEGB,tKSH,tNGN,tZar,tUSD,tEURO,tPOUND,tETH,ESPEES,ASPR, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI , ERC20_URI, Swap_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD} from "./constants";
+import ReactDOM from "react-dom";
 type TokenKeys = keyof typeof tokenAddresses;
+type  APInames = keyof typeof tokenAPIName;
 
 export default function DexApp() {
+ 
+
+
   const [txnHash, setTxnHash] = useState<string | null>(null);
 const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
@@ -27,7 +33,7 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const [swapFromToken, setSwapFromToken] = useState<string>(""); // Initialize with empty string
   const [swapToToken, setSwapToToken] = useState<string>(""); // Initialize with empty string
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null); // Track selected wallet
-
+  <script src="https://cdn.ethers.io/lib/ethers-5.5.0.min.js"></script>
 
   useEffect(() => {
     if (txnStatus === 'Success' && successMessageRef.current) {
@@ -50,39 +56,6 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
 
   
 
-
-
-// const connectMetaMask = async () => {
-//   try {
-//     // Check if MetaMask is installed and enabled
-//     if (typeof (window as any).ethereum !== 'undefined') {
-//       // Request access to the user's Ethereum accounts
-//       await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
-
-//       // Create a new ethers.js provider using the user's Ethereum provider (MetaMask)
-//       // const provider = new ethers.providers.Web3Provider((window as any).ethereum);
-//       // setProvider(provider);
-
-//       const accounts = await provider.listAccounts();
-//       setUserAddress(accounts[0]);
-//       setIsConnected(true);
-//       const shortAddr = `${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`;
-//       setShortAddress(shortAddr);
-
-
-//       if (connectButtonRef.current) {
-//         connectButtonRef.current.innerHTML = ` ${shortAddr}`;
-//       }
-//     } else {
-
-//       if (connectButtonRef.current) {
-//         connectButtonRef.current.innerHTML = 'Install MetaMask';
-//       }
-//     }
-//   } catch (error) {
-//     console.error('Error connecting to MetaMask:', error);
-//   }
-// };
 const connectToroWallet = async () => {
    const walletAddress = prompt("Enter Wallet Address:");
  const  password = prompt("Enter Password:");
@@ -135,244 +108,20 @@ const connectToroWallet = async () => {
   }
 };
 
-  /* const swapTokensMetamask = async () => {
-    try {
-     
-      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
-      const signer = provider.getSigner();
-      const contract = new ethers.Contract(
-        Swap_Contract_Address,
-        Swap_Contract_ABI,
-        signer
-      );
   
-      // Select the appropriate swap function and token contract based on the selected token
-      let swapFunction, tokenContractAddress;
-      if (swapFromToken === "AQT") {
-        swapFunction = "swapAQT_TokenForA";
-        tokenContractAddress = AQT_TOKEN_ADDRESS;
-      } else {
-        swapFunction = "swapMT_TokenForB";
-        tokenContractAddress = MT_TOKEN_ADDRESS;
-      }
-  
-      const tokenContract = new ethers.Contract(tokenContractAddress, ERC20_ABI, signer);
-      
-      // Check allowance and approve if needed
-      const allowance = await tokenContract.allowance(signer.getAddress(), Swap_Contract_Address);
-      if (allowance.lt(ethers.utils.parseEther(swapAmount.toString()))) {
-        const approveTx = await tokenContract.approve(Swap_Contract_Address, ethers.constants.MaxUint256);
-        setTxnHash(approveTx.hash);
-        setTxnStatus('Pending');
-        await approveTx.wait();
-        setTxnStatus('Confirmed');
-      }
-  
-      // Perform the token swap
-      const txnResponse = await contract[swapFunction](ethers.utils.parseEther(swapAmount.toString()));
-      setTxnHash(txnResponse.hash);
-      setTxnStatus('Pending');
-      await txnResponse.wait();
-      setTxnStatus('Confirmed');
-  
-      setTxnStatus('Success');
-    } catch (error) {
-      console.error(error);
-      setTxnStatus('Error');
-    }
-  };
-  
-  const addLiquidityMetamask = async () => {
-    if (typeof (window as any).ethereum !== 'undefined') {
-      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
-      const signer = provider.getSigner();
-      const address = await signer.getAddress();
 
-      try {
-        const contract = new ethers.Contract(
-          Swap_Contract_Address,
-          Swap_Contract_ABI,
-          signer
-        );
-
-        const mtContract = new ethers.Contract(MT_TOKEN_ADDRESS, ERC20_ABI, signer);
-        const aqtContract = new ethers.Contract(AQT_TOKEN_ADDRESS, ERC20_ABI, signer);
-
-        // Approve the Swap Contract to spend the tokens
-        const aqtApprovalTx = await aqtContract.approve(Swap_Contract_Address, ethers.utils.parseEther(addLiquidityAmount1.toString()));
-        setTxnHash(aqtApprovalTx.hash);
-        setTxnStatus('Pending');
-        await aqtApprovalTx.wait();
-        setTxnStatus('Confirmed');
-
-        const mtApprovalTx = await mtContract.approve(Swap_Contract_Address, ethers.utils.parseEther(addLiquidityAmount2.toString()));
-        setTxnHash(mtApprovalTx.hash);
-        setTxnStatus('Pending');
-        await mtApprovalTx.wait();
-        setTxnStatus('Confirmed');
-
-        // Add the liquidity
-        const txnResponse = await contract.addLiquidity(ethers.utils.parseEther(addLiquidityAmount1.toString()), ethers.utils.parseEther(addLiquidityAmount2.toString()));
-        setTxnHash(txnResponse.hash);
-        setTxnStatus('Pending');
-        await txnResponse.wait();
-        setTxnStatus('Confirmed');
-
-        setTxnStatus('Success');
-      } catch (error) {
-        console.error(error);
-        setTxnStatus('Error');
-      }
-    }
+async function addAllTokensToLiquidty(){
  
-      
-  };
-*/
+  let amount1 = (addLiquidityAmount1 *1e18);
+  let amount2 =  (addLiquidityAmount2 *1e18);
+  let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
+  let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
+  let apiName1 =  tokenAPIName[addLiquidityToken2 as APInames];
+  
+   try { 
 
-  const addLiquidity = async () => {  // for toronetWallet
-   // for first toke
-    
-  {
-let address = Swap_Contract_Address;
-let amount1 = (addLiquidityAmount1 *1e18);
-
-let amount2 =  (addLiquidityAmount2 *1e18);
-let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
-let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
-
- let argument = `${address}|${amount1}`;
-    fetch('https://testnet.toronet.org/api/keystore/', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-   
-      body: JSON.stringify({
-          "op": "callContractFunction",
-          "params": [
-              {
-                  "name": "addr",
-                  "value": userAddress  // this should be the address pf the user passed in e.g //0x021eae324e90cf49ebb915d14f8cd37d2954f0f4
-              },
-              {
-                  "name": "pwd",
-                  "value": userPassword // this should be the password e.g//Salem12345
-              },
-              {
-                  "name": "contractaddress",
-                  "value": token1
-              },
-              {
-                  "name": "functionname",
-                  "value": "approve"
-              },
-              {
-                  "name": "functionarguments",
-                  "value": argument
-              },
-              {
-                  "name": "abi",
-                  "value": ERC20_URI
-              }
-            ]
-      })
-  })
-  .then(response => {
-      if (!response.ok) { 
-
-        if(response.status == 204 || response.status ==200  ){
-          console.log("okay")
-          setTxnStatus('Success');
-        }
-          throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-  })
-  .then(data => {
-      // Check the response data for success
-      if (data.success === true) {
-          console.log("Function call successful");
-      } else {
-          console.error("Function call failed");
-            setTxnStatus('Success');
-          
-      }
-  })
-  .catch(error => {
-      console.error('Error:', error);
-  });
-
-
-
-  // Approval for Second token
-
-  argument = `${address}|${amount2}`;
-  fetch('https://testnet.toronet.org/api/keystore/', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-   
-      body: JSON.stringify({
-          "op": "callContractFunction",
-          "params": [
-              {
-                  "name": "addr",
-                  "value": userAddress  // this should be the address pf the user passed in 
-              },
-              {
-                  "name": "pwd",
-                  "value": userPassword // this should be the password
-              },
-              {
-                  "name": "contractaddress",
-                  "value": token2
-              },
-              {
-                  "name": "functionname",
-                  "value": "approve"
-              },
-              {
-                  "name": "functionarguments",
-                  "value": argument
-              },
-              {
-                  "name": "abi",
-                  "value": ERC20_URI
-              }
-            ]
-      })
-  })
-  .then(response => {
-      if (!response.ok) { 
-
-        if(response.status == 204 || response.status ==200  ){
-          console.log("okay")
-          setTxnStatus('Success');
-        }
-          throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-  })
-  .then(data => {
-      // Check the response data for success
-      if (data.success === true) {
-          console.log("Function call successful");
-      } else {
-          console.error("Function call failed");
-            setTxnStatus('Success');
-          
-      }
-  })
-  .catch(error => {
-      console.error('Error:', error);
-  });
-
-console.log("Done For 2 tokens")
-  // // Now addLiquidity
-
-  let argument_addLiquidity = `${token1}|${amount1}|${token2}|${amount2}`;
-  fetch('https://testnet.toronet.org/api/keystore/', {
+    let argument_addLiquidity = `${token1}|${amount1}|${token2}|${amount2}`;
+   fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -408,45 +157,364 @@ console.log("Done For 2 tokens")
             ]
       })
   })
+    .then(response => {
+      
+        if (!response.ok) { 
+  
+          if(response.status == 204 || response.status ==200  ){
+            console.log("okay")
+           // setTxnStatus('Success');
+          }
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        return response.json();
+  
+    })
+    .then(data => {
+    
+        if (data.status === true) {
+            console.log("Function call successful");
+             setTxnStatus('Success');
+        } else {
+            console.error("Function call failed");
+            alert (`Failed To add ${token1} and ${token2} to Liquidity pool`)
+            
+            
+        }
+    }) 
+  
+  }
+    catch (error) {
+      console.error('Error:', error);
+      return;  // Return early to stop further execution
+  }
+  
+  setTxnStatus('Success');
+
+
+}
+async function addSecondToToLiquidity(){
+
+  
+  let amount1 = (addLiquidityAmount1 *1e18);
+  let amount2 =  (addLiquidityAmount2 *1e18);
+  let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
+  let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
+  let apiName1 =  tokenAPIName[addLiquidityToken2 as APInames];
+  
+   
+  try{
+  
+    let txnOne  = await fetch(getApiUrl(apiName1), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+     
+        body: JSON.stringify({
+            "op": "transfer",
+            "params": [
+                {
+                    "name": "client",
+                    "value": userAddress  // this should be the address pf the user passed in e.g //0x021eae324e90cf49ebb915d14f8cd37d2954f0f4
+                },
+                {
+                    "name": "clientpwd",
+                    "value": userPassword // this should be the password e.g//Salem12345
+                },
+                {
+                    "name": "to",
+                    "value": DEX_ADDRESS
+                },
+                {
+                    "name": "val",
+                    "value":(amount2/1e18).toString()
+                },
+              
+              ]
+        })
+    })
+    .then(response => {
+      
+        if (!response.ok) { 
+  
+          if(response.status == 204 || response.status ==200  ){
+            console.log("okay")
+           // setTxnStatus('Success');
+          }
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        return response.json();
+  
+    })
+    .then(data => {
+    
+        if (data.result === true) {
+            console.log("Function call successful");
+             setTxnStatus('Success');
+             addAllTokensToLiquidty()
+        } else {
+            console.error("Function call failed");
+            alert (`Failed To add ${token1} and ${token2} to Liquidity pool`)
+            
+            
+        }
+    }) }
+    catch (error) {
+      console.error('Error:', error);
+      return;  // Return early to stop further execution
+  }
+  
+  
+
+}
+
+function getApiUrl( apiName1: string) {
+  return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
+}
+
+  const addLiquidity = async () => {  // for toronetWallet
+  
+  {
+
+let amount1 = (addLiquidityAmount1 *1e18);
+let amount2 =  (addLiquidityAmount2 *1e18);
+let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
+let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
+let apiName1 =  tokenAPIName[addLiquidityToken1 as APInames];
+
+
+try{
+
+  let txnOne  = await fetch(getApiUrl(apiName1), {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+   
+      body: JSON.stringify({
+          "op": "transfer",
+          "params": [
+              {
+                  "name": "client",
+                  "value": userAddress  // this should be the address pf the user passed in e.g //0x021eae324e90cf49ebb915d14f8cd37d2954f0f4
+              },
+              {
+                  "name": "clientpwd",
+                  "value": userPassword // this should be the password e.g//Salem12345
+              },
+              {
+                  "name": "to",
+                  "value": DEX_ADDRESS
+              },
+              {
+                  "name": "val",
+                  "value":(amount1/1e18).toString()
+              },
+            
+            ]
+      })
+  })
   .then(response => {
+    
       if (!response.ok) { 
 
         if(response.status == 204 || response.status ==200  ){
           console.log("okay")
-          setTxnStatus('Success');
+         // setTxnStatus('Success');
         }
           throw new Error(`HTTP error! Status: ${response.status}`);
       }
+      
       return response.json();
+
   })
   .then(data => {
-      // Check the response data for success
-      if (data.success === true) {
+  
+      if (data.result === true) {
           console.log("Function call successful");
+           setTxnStatus('Success');
+           addSecondToToLiquidity()
       } else {
           console.error("Function call failed");
-            setTxnStatus('Success');
+          alert (`Failed To add ${token1} to Liquidity pool`)
+          
           
       }
+  }) }
+  catch (error) {
+    console.error('Error:', error);
+    return;  // Return early to stop further execution
+}
+
+  }
+
+  }
+
+  const recieveToken = async() =>{
+
+    let amount = ((swapAmount));
+
+let token1 = tokenAddresses[swapFromToken as TokenKeys];
+let token2 = tokenAddresses[swapToToken as TokenKeys];
+let apiName1 =  tokenAPIName[swapToToken as APInames];
+// now let's get the DEx amount
+
+try{
+
+  let txnOne  = await fetch(getApiUrl(apiName1), {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+   
+      body: JSON.stringify({
+          "op": "transfer",
+          "params": [
+              {
+                  "name": "client",
+                  "value": DEX_ADDRESS  // this should be the address pf the user passed in e.g //0x021eae324e90cf49ebb915d14f8cd37d2954f0f4
+              },
+              {
+                  "name": "clientpwd",
+                  "value": DEX_PASSWORD // this should be the password 
+              },
+              {
+                  "name": "to",
+                  "value": userAddress
+              },
+              {
+                  "name": "val",
+                  "value":(amount).toString()
+              },
+            
+            ]
+      })
   })
-  .catch(error => {
-      console.error('Error:', error);
-  });
-
-  };
-};
-
-
-
-  const swapToken = async () => { // swap tokens on toronet
+  .then(response => {
     
-    let amount = ((swapAmount)*1e18);
+      if (!response.ok) { 
 
-    console.log(amount)
-let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
+        if(response.status == 204 || response.status ==200  ){
+          console.log("okay")
+         // setTxnStatus('Success');
+        }
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      return response.json();
 
-console.log(token1)
-let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
+  })
+  .then(data => {
+  
+      if (data.result === true) {
+          console.log("Function call successful");
+           setTxnStatus('Success');
+           updateSwapTokenInContract()
+      } else {
+          console.error("Function call failed");
+          alert (`Failed To swap ${token1} with ${token2} `)
+          
+          
+      }
+  }) }
+  catch (error) {
+    console.error('Error:', error);
+    return;  // Return early to stop further execution
+}
+
+
+
+  }
+
+
+
+  const swapToken = async () => {  // 
+
+let amount = ((swapAmount));
+console.log(amount)
+
+let token1 = tokenAddresses[swapFromToken as TokenKeys];
+let token2 = tokenAddresses[swapToToken as TokenKeys];
+let apiName1 =  tokenAPIName[swapFromToken as APInames];
+
+
+try{
+
+  let txnOne  = await fetch(getApiUrl(apiName1), {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+   
+      body: JSON.stringify({
+          "op": "transfer",
+          "params": [
+              {
+                  "name": "client",
+                  "value": userAddress  // this should be the address pf the user passed in e.g //0x021eae324e90cf49ebb915d14f8cd37d2954f0f4
+              },
+              {
+                  "name": "clientpwd",
+                  "value": userPassword // this should be the password 
+              },
+              {
+                  "name": "to",
+                  "value": DEX_ADDRESS
+              },
+              {
+                  "name": "val",
+                  "value":(amount).toString()
+              },
+            
+            ]
+      })
+  })
+  .then(response => {
+    
+      if (!response.ok) { 
+
+        if(response.status == 204 || response.status ==200  ){
+          console.log("okay")
+         // setTxnStatus('Success');
+        }
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      return response.json();
+
+  })
+  .then(data => {
+  
+      if (data.result === true) {
+          console.log("Function call successful");
+           setTxnStatus('Success');
+           recieveToken()
+      } else {
+          console.error("Function call failed");
+          alert (`Failed To swap ${token1} with ${token2} `)
+          
+          
+      }
+  }) }
+  catch (error) {
+    console.error('Error:', error);
+    return;  // Return early to stop further execution
+}
+
+  }
+
+
+  const updateSwapTokenInContract = async () => { // swap tokens on toronet // update information to the smart contract
+    
+    let amount = ((swapAmount));
+
+    let token1 = tokenAddresses[swapFromToken as TokenKeys];
+    let token2 = tokenAddresses[swapToToken as TokenKeys];
+    let apiName1 =  tokenAPIName[swapFromToken as APInames];
+    
 
     {
 
@@ -492,7 +560,7 @@ let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
 
         if(response.status == 204 || response.status ==200  ){
           console.log("okay")
-          setTxnStatus('Success');
+        
         }
           throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -500,11 +568,13 @@ let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
   })
   .then(data => {
       // Check the response data for success
-      if (data.success === true) {
+      if (data.status === true) {
+        setTxnStatus('Success');
           console.log("Function call successful");
+       
       } else {
           console.error("Function call failed");
-            setTxnStatus('Success');
+           
           
       }
   
@@ -520,6 +590,13 @@ let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
   
 
 const previewAmount = async () => {
+//   const rpcURL = 'https://testnet.toronet.org/rpc/'
+//   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
+//   const wallet = new ethers.Wallet("760e68cd8f2fdb31b1f17d0ac98379e76978b94e2ff91af07efa31c8ebdacfe7",provider)
+//   const contract = new ethers.Contract(Swap_Contract_Address,Swap_Contract_ABI,wallet)
+// const see = await contract.getReserves("0xB2D7A98ED24cC8bDec8889c5D80dF130657dc9Ac")
+//   const check = ethers.utils.parseEther("1")
+//   console.log(check)
   try {
     const response = await fetch('http://testnet.toronet.org/api/token/toro/cl?op=calculatetxfee&params[0][name]=client&params[0][value]=0xf3cdfc4a1dce2d98ff878971626b798279954c43&params[1][name]=val&params[1][value]=2', {
       method: 'GET',
@@ -553,12 +630,7 @@ const previewAmount = async () => {
         
         
         <div className="flex justify-between mb-4">
-          {/* <button
-            onClick={connectMetaMask}
-            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 mr-2"
-          >
-            {isConnected ? `Connected: ${shortAddress}` : "Connect MetaMask"}
-          </button> */}
+         
           <button
             onClick={connectToroWallet}
             className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
@@ -708,3 +780,5 @@ const previewAmount = async () => {
     </div>
   );
 }
+
+

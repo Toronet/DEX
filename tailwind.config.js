@@ -15,4 +15,6 @@ module.exports = {
     },
   },
   plugins: [],
+
+  "include": ["src", "src/global.d.ts"]
 }
