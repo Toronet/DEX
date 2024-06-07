@@ -31,7 +31,7 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const [addLiquidityToken2, setAddLiquidityToken2] = useState("");
   const [addLiquidityAmount1, setAddLiquidityAmount1] = useState(0);
   const [addLiquidityAmount2, setAddLiquidityAmount2] = useState(0);
-  const [estimatedTokenShares, setestimatedTokenShares] = useState(0);
+  const [estimatedTokenShares, setestimatedTokenShares] =  useState<string>('');
   const [userAddress, setUserAddress] = useState("");
   let  [userPassword,setPassword] =useState("");
   const [shortAddress, setShortAddress] = useState("");
@@ -623,7 +623,9 @@ const previewAmount = async () => {
     const data = await response.json();
     // Handle the response data here
     console.log(data);
-    setestimatedTokenShares(amountPreview)
+    console.log(swapToToken)
+    const response_ = `You will recieve ${amountPreview.toString()} ${swapToToken}`
+    setestimatedTokenShares(response_)
   } catch (error) {
     console.error(error);
   }
