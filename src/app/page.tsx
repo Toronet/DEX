@@ -593,6 +593,7 @@ try{
   });
 
   }
+  setTxnStatus('Success');
   
 }
   
