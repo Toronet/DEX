@@ -3,14 +3,21 @@
 import { useRouter } from "next/navigation";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ethers } from "./ethers-5.6.esm.min";
+
 import { tEGB,tKSH,tNGN,tZar,tUSD,tEURO,tPOUND,tETH,ESPEES,ASPR, ERC20_ABI, Swap_Contract_Address, Swap_Contract_ABI , ERC20_URI, Swap_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD} from "./constants";
-import ReactDOM from "react-dom";
+
+import { ethers } from "ethers";
 type TokenKeys = keyof typeof tokenAddresses;
 type  APInames = keyof typeof tokenAPIName;
 
 export default function DexApp() {
  
+  const rpcURL = 'https://testnet.toronet.org/rpc/'
+  const provider = new ethers.providers.JsonRpcProvider(rpcURL)
+
+  const contract = new ethers.Contract(Swap_Contract_Address,Swap_Contract_ABI,provider)
+
+
 
 
   const [txnHash, setTxnHash] = useState<string | null>(null);
@@ -33,7 +40,7 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const [swapFromToken, setSwapFromToken] = useState<string>(""); // Initialize with empty string
   const [swapToToken, setSwapToToken] = useState<string>(""); // Initialize with empty string
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null); // Track selected wallet
-  <script src="https://cdn.ethers.io/lib/ethers-5.5.0.min.js"></script>
+ 
 
   useEffect(() => {
     if (txnStatus === 'Success' && successMessageRef.current) {
@@ -83,7 +90,7 @@ const connectToroWallet = async () => {
     }
 
     const data = await response.json();
-
+    console.log(data.result)
 
     if (data.result) {
       // Save password and user address to localStorage
@@ -206,7 +213,7 @@ async function addSecondToToLiquidity(){
    
   try{
   
-    fetch(getApiUrl(apiName1), {
+    let txnOne  = await fetch(getApiUrl(apiName1), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -288,7 +295,7 @@ let apiName1 =  tokenAPIName[addLiquidityToken1 as APInames];
 
 try{
 
-  fetch(getApiUrl(apiName1), {
+  let txnOne  = await fetch(getApiUrl(apiName1), {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -361,10 +368,11 @@ let token1 = tokenAddresses[swapFromToken as TokenKeys];
 let token2 = tokenAddresses[swapToToken as TokenKeys];
 let apiName1 =  tokenAPIName[swapToToken as APInames];
 // now let's get the DEx amount
-
+const amountPreview = await contract.calculateSwapAmount(token1,token2,amount)
+console.log(amountPreview.toString())
 try{
 
-   fetch(getApiUrl(apiName1), {
+  let txnOne  = await fetch(getApiUrl(apiName1), {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -387,7 +395,7 @@ try{
               },
               {
                   "name": "val",
-                  "value":(amount).toString()
+                  "value":(amountPreview).toString()
               },
             
             ]
@@ -443,7 +451,7 @@ let apiName1 =  tokenAPIName[swapFromToken as APInames];
 
 try{
 
- (getApiUrl(apiName1), {
+  let txnOne  = await fetch(getApiUrl(apiName1), {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -590,13 +598,16 @@ try{
   
 
 const previewAmount = async () => {
-//   const rpcURL = 'https://testnet.toronet.org/rpc/'
-//   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
-//   const wallet = new ethers.Wallet("760e68cd8f2fdb31b1f17d0ac98379e76978b94e2ff91af07efa31c8ebdacfe7",provider)
-//   const contract = new ethers.Contract(Swap_Contract_Address,Swap_Contract_ABI,wallet)
-// const see = await contract.getReserves("0xB2D7A98ED24cC8bDec8889c5D80dF130657dc9Ac")
-//   const check = ethers.utils.parseEther("1")
-//   console.log(check)
+  //calculateSwapAmount // IERC20 fromToken, IERC20 toToken, uint256 amount
+
+  let amount = ((swapAmount));
+
+    let tokenFrom = tokenAddresses[swapFromToken as TokenKeys];
+    let tokenTo = tokenAddresses[swapToToken as TokenKeys];
+
+  const amountPreview = await contract.calculateSwapAmount(tokenFrom,tokenTo,amount)
+  console.log(amountPreview.toString())
+
   try {
     const response = await fetch('http://testnet.toronet.org/api/token/toro/cl?op=calculatetxfee&params[0][name]=client&params[0][value]=0xf3cdfc4a1dce2d98ff878971626b798279954c43&params[1][name]=val&params[1][value]=2', {
       method: 'GET',
@@ -612,7 +623,7 @@ const previewAmount = async () => {
     const data = await response.json();
     // Handle the response data here
     console.log(data);
-    setestimatedTokenShares(data.message)
+    setestimatedTokenShares(amountPreview)
   } catch (error) {
     console.error(error);
   }
