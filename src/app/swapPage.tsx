@@ -426,30 +426,33 @@ const previewAmount = async () => {
     let tokenFrom = tokenAddresses[swapFromToken as TokenKeys];
     let tokenTo = tokenAddresses[swapToToken as TokenKeys];
 
-  const amountPreview = await contract.getAmountOut(tokenFrom,tokenTo,amount)
-  console.log(amountPreview.toString())
+    try {
+      const amountPreview = await contract.getAmountOut(tokenFrom,tokenTo,amount)
+      console.log(amountPreview.toString())
 
-  try {
-    const response = await fetch('http://testnet.toronet.org/api/token/toro/cl?op=calculatetxfee&params[0][name]=client&params[0][value]=0xf3cdfc4a1dce2d98ff878971626b798279954c43&params[1][name]=val&params[1][value]=2', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+  
+   
+      const response_ = `You will recieve ${amountPreview.toString()} ${swapToToken}`
+    
+      setestimatedTokenShares(response_)
+      setSnackbarMessage(response_);
+      setOpenSnackbar(true);
+   
+    ;
     }
+    catch(error){
+      setSnackbarMessage("Invalid Pair");
+      setOpenSnackbar(true);
+      console.log(error)
+    }
+    
+   
 
-    const data = await response.json();
-    // Handle the response data here
-    console.log(data);
-    console.log(swapToToken)
-    const response_ = `You will recieve ${amountPreview.toString()} ${swapToToken}`
-    setestimatedTokenShares(response_)
-  } catch (error) {
-    console.error(error);
-  }
+
+
+  
+
+  
 };
 
 
