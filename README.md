@@ -1,39 +1,25 @@
+Design of ToroNet DEX
 
-It's curretly Live at [Link](https://latestdextoro-h3ez1zb39-olaoyesalems-projects.vercel.app/https://latestdextoro-h3ez1zb39-olaoyesalems-projects.vercel.app/)
+Project Overview:
+The ToroNet DEX is a decentralized exchange built on the ToroNet blockchain, tailored specifically for Toronet stablecoins. It enables users to add liquidity, swap tokens, and claim gains from providing liquidity. Here are the key features and design aspects:
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Key Features:
 
-## Getting Started
+Token Ecosystem: Exclusively supports Toronet stablecoins, facilitating seamless trading and liquidity provisioning within the ToroNet blockchain ecosystem.
 
-First, run the development server:
+Liquidity Management: Users can add liquidity to existing token pairs. Pair creation, however, is restricted to administrators, ensuring controlled market expansion.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+Security Measures: Due to security concerns, the contract avoids approve and transferFrom functions. Instead, users must initially transfer funds directly to the contract for liquidity and trading activities.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Balance Verification: Prior to any action like liquidity addition or token swapping, the contract verifies user balances to ensure sufficient funds, thereby preventing potential errors.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Swap Fee: Users are subject to a 5% fee during token swaps. This fee is integral to the economic model of the DEX and contributes to sustainability and incentive mechanisms.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Immutable Ledger: The contract acts as an immutable ledger, storing token pair data, liquidity amounts, and user balances securely on the ToroNet blockchain.
 
-## Learn More
+Gains Claiming: Liquidity providers can claim gains based on their stake in the liquidity pool. This feature dynamically calculates gains, considering the liquidity provided and the applicable fee rate.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+References:
+https://drive.google.com/file/d/1Vgy_ZTnuMnRI6-OOgeYPZSxM56-SKKuW/view?usp=drive_link
 
 
