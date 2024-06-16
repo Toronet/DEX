@@ -7,11 +7,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { Toronet_Dex_Address, Toronet_Dex_ABI , Toronet_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD} from "./constants";
 
 import { ethers } from "ethers";
+import { Snackbar, Slide, SnackbarContent, SlideProps } from "@material-ui/core";
 
 type TokenKeys = keyof typeof tokenAddresses;
 type  APInames = keyof typeof tokenAPIName;
 
 
+function SlideTransition(props: React.JSX.IntrinsicAttributes & SlideProps) {
+  return <Slide {...props} direction="left" />;
+}
 
 export default function HomePage() {
  
@@ -40,6 +44,8 @@ const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const [swapFromToken, setSwapFromToken] = useState<string>(""); // Initialize with empty string
   const [swapToToken, setSwapToToken] = useState<string>(""); // Initialize with empty string
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null); // Track selected wallet
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
  
 
   useEffect(() => {
@@ -69,7 +75,9 @@ const connectToroWallet = async () => {
    const walletAddress = prompt("Enter Wallet Address:");
  const  password = prompt("Enter Password:");
   if (!walletAddress || !password) {
-    alert("Please enter both Wallet Address and Password.");
+
+    setSnackbarMessage(`Please enter both Wallet Address and Password.`);
+    setOpenSnackbar(true);
     return;
   }
   const messageToSign = "Signature";
@@ -107,13 +115,19 @@ const connectToroWallet = async () => {
       if (connectButtonRef.current) {
         connectButtonRef.current.innerHTML = `Connected: ${shortAddr}`;
       }
-      alert("Connected successfully!");
+
+      setSnackbarMessage(`Connected successfully!`);
+      setTxnStatus('Success');
+      setOpenSnackbar(true);
     } else {
-      alert("Connection failed. Please check your Wallet Address and Password.");
+     
+    setSnackbarMessage(`Connection failed. Please check your Wallet Address and Password..`);
+    setOpenSnackbar(true);
     }
   } catch (error) {
     console.error('Error connecting to Toro Wallet:', error);
-    alert("Toronet Address Or Password is Incorrect. Please try again later.");
+    setSnackbarMessage(`Connection failed. Please check your Wallet Address and Password..`);
+    setOpenSnackbar(true);
   }
 };
 
@@ -130,6 +144,7 @@ function getApiUrl( apiName1: string) {
 let token1 = tokenAddresses[swapFromToken as TokenKeys];
 let token2 = tokenAddresses[swapToToken as TokenKeys];
 let apiName1 =  tokenAPIName[swapToToken as APInames];
+let apiName2 =  tokenAPIName[swapFromToken as APInames];
 // now let's get the DEx amount
 const amountPreview = await contract.getAmountOut(token1,token2,amount)
 console.log(amountPreview.toString())
@@ -182,11 +197,14 @@ try{
   
       if (data.result === true) {
           console.log("Function call successful");
-           setTxnStatus('Success');
+           
            updateSwapTokenInContract()
       } else {
           console.error("Function call failed");
-          alert (`Failed To swap ${token1} with ${token2} `)
+      
+
+          setSnackbarMessage(`Failed To swap ${apiName1}    with   ${apiName2}`);
+      setOpenSnackbar(true);
           
           
       }
@@ -235,6 +253,7 @@ let amount = ((swapAmount+ 0.05 * swapAmount)); // 5% fee
 let token1 = tokenAddresses[swapFromToken as TokenKeys];
 let token2 = tokenAddresses[swapToToken as TokenKeys];
 let apiName1 =  tokenAPIName[swapFromToken as APInames];
+let apiName2= tokenAPIName[swapToToken as APInames];
 
 
 try{
@@ -286,12 +305,14 @@ try{
   
       if (data.result === true) {
           console.log("Function call successful");
-           setTxnStatus('Success');
+          
            updateSwapTokenInContract();
            
       } else {
           console.error("Function call failed");
-          alert (`Failed To swap ${token1} with ${token2} `)
+          
+          setSnackbarMessage(`Failed To swap ${apiName1}    with   ${apiName2}`);
+          setOpenSnackbar(true);
           
           
       }
@@ -311,6 +332,7 @@ try{
     let token1 = tokenAddresses[swapFromToken as TokenKeys];
     let token2 = tokenAddresses[swapToToken as TokenKeys];
     let apiName1 =  tokenAPIName[swapFromToken as APInames];
+    let apiName2 = tokenAPIName[swapToToken as APInames];
     
 
     {
@@ -366,11 +388,16 @@ try{
   .then(data => {
       // Check the response data for success
       if (data.status === true) {
-        setTxnStatus('Success');
+      
           console.log("Function call successful");
+          setSnackbarMessage(`Successfully  Swap ${apiName1}    with   ${apiName2}`);
+          setTxnStatus('Success')
+          setOpenSnackbar(true);
        
       } else {
           console.error("Function call failed");
+          setSnackbarMessage(`Failed To swap ${apiName1}    with   ${apiName2}`);
+          setOpenSnackbar(true);
            
           
       }
@@ -382,10 +409,14 @@ try{
   });
 
   }
-  setTxnStatus('Success');
+
   
 }
   
+const handleCloseSnackbar = () => {
+  setOpenSnackbar(false);
+};
+
 
 const previewAmount = async () => {
   //calculateSwapAmount // IERC20 fromToken, IERC20 toToken, uint256 amount
@@ -423,60 +454,58 @@ const previewAmount = async () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800 dark:text-white">
+
+    <div className="min-h-screen flex items-center justify-center bg-gray-10 dark:bg-gray-30 dark:text-white">
       <div className="p-6 shadow-md bg-white dark:bg-gray-700 rounded-md w-full max-w-md">
-      
-      
-      <div style={{ marginBottom: '20px' }}>
-  <button
-    onClick={connectToroWallet}
-    className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
-  >
-    {isConnected ? `Connected: ${shortAddress}` : "Connect To Toronet "}
-  </button>
-</div>
+        <div style={{ marginBottom: '10px' }}>
+          <button
+            onClick={connectToroWallet}
+            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+          >
+            {isConnected ? `Connected: ${shortAddress}` : "Connect To Toronet "}
+          </button>
+        </div>
 
-
-       
         <div className="mb-4">
           <h2 className="text-lg font-semibold mb-2">Swap Tokens</h2>
-          <div className="flex justify-between">
+          <div className="flex justify-between mb-2">
             <select
               value={swapFromToken}
               onChange={(e) => setSwapFromToken(e.target.value)}
               className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
             >
-                 <option value="">Swap From</option>
-      <option value="tEGB">tEGB</option>
-      <option value="tKSH">τKSH</option>
-      <option value="tNGN">τNGN</option>
-      <option value="tZAR">τZAR</option>
-      <option value="tUSD">τUSD</option>
-      <option value="tEURO">τEURO</option>
-      <option value="tPOUND">τPOUND</option>
-      <option value="tETH">τETH</option>
-      <option value="ESPEES">ESPEES</option>
-      <option value="ASPR">ASPR</option>
+              <option value="">Swap From</option>
+              <option value="tEGB">tEGB</option>
+              <option value="tKSH">τKSH</option>
+              <option value="tNGN">τNGN</option>
+              <option value="tZAR">τZAR</option>
+              <option value="tUSD">τUSD</option>
+              <option value="tEURO">τEURO</option>
+              <option value="tPOUND">τPOUND</option>
+              <option value="tETH">τETH</option>
+              <option value="ESPEES">ESPEES</option>
+              <option value="ASPR">ASPR</option>
             </select>
-            
+
             <select
               value={swapToToken}
               onChange={(e) => setSwapToToken(e.target.value)}
               className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
             >
-    <option value="">Swap To</option>
-      <option value="tEGB">tEGB</option>
-      <option value="tKSH">τKSH</option>
-      <option value="tNGN">τNGN</option>
-      <option value="tZAR">τZAR</option>
-      <option value="tUSD">τUSD</option>
-      <option value="tEURO">τEURO</option>
-      <option value="tPOUND">τPOUND</option>
-      <option value="tETH">τETH</option>
-      <option value="ESPEES">ESPEES</option>
-      <option value="ASPR">ASPR</option>
+              <option value="">Swap To</option>
+              <option value="tEGB">tEGB</option>
+              <option value="tKSH">τKSH</option>
+              <option value="tNGN">τNGN</option>
+              <option value="tZAR">τZAR</option>
+              <option value="tUSD">τUSD</option>
+              <option value="tEURO">τEURO</option>
+              <option value="tPOUND">τPOUND</option>
+              <option value="tETH">τETH</option>
+              <option value="ESPEES">ESPEES</option>
+              <option value="ASPR">ASPR</option>
             </select>
           </div>
+
           <input
             type="number"
             value={swapAmount}
@@ -484,33 +513,44 @@ const previewAmount = async () => {
             className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
             placeholder="Enter Amount to Swap"
           />
-          <button
-            onClick={swapToken}
-            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+
+          <div className="flex justify-between">
+            <button
+              onClick={swapToken}
+              className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
             >
-            Swap
-          </button>
+              Swap
+            </button>
+
+            <button
+              onClick={previewAmount}
+              className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+            >
+              Preview
+            </button>
+          </div>
+
+          <p className="text-center mt-2">{estimatedTokenShares}</p>
         </div>
 
-         <button
-            onClick={previewAmount}
-            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
->
-            Preview
-          </button>
-          <p className="text-center mt-2"> {estimatedTokenShares}</p>
-
-      
-          {/* Success and Error Messages */}
-          <div ref={successMessageRef} className="fixed top-0 left-0 w-full bg-green-500 text-white p-4 rounded-md text-center mb-4" style={{ display: 'none' }}>
-        Transaction Successful 🎉🎊!
-        </div>
-        <div ref={errorMessageRef} className="fixed top-0 left-0 w-full bg-red-500 text-white p-4 rounded-md text-center mb-4" style={{ display: 'none' }}>
-          Transacttion Reverted ❌🟥.
-        </div>
+        <Snackbar
+          open={openSnackbar}
+          onClose={handleCloseSnackbar}
+          TransitionComponent={SlideTransition}
+          autoHideDuration={6000}
+        >
+          <SnackbarContent
+            message={snackbarMessage}
+            style={{
+              backgroundColor: txnStatus === 'Success' ? 'green' : 'red',
+            }}
+          />
+        </Snackbar>
       </div>
     </div>
   );
-}
+
+  }
+
 
 

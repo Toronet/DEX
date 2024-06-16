@@ -10,6 +10,8 @@
     "tailwind:css": "tailwindcss build ./styles/index.css -o ./styles/tailwind.css"
   },
   "dependencies": {
+    "@material-ui/core": "^4.12.4",
+    "@material-ui/lab": "^4.0.0-alpha.61",
     "@types/node": "20.4.1",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
