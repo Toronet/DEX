@@ -45,7 +45,7 @@ export const tokenAPIName = {
     "tKSH": "ksh",
     "tNGN": "naira",
     "tZAR": "zar",
-    "tUSD": "rate_dollar",
+    "tUSD": "dollar",
     "tEURO": "euro",
     "tPOUND": "pound",
     "tETH": "rate_eth",
@@ -386,7 +386,7 @@ export const ERC20_ABI = [
 
 
 
-export const Toronet_Dex_Address = "0x7A56692bc2305C5790Ce4e51ae7bFd5b08fAae73"////0x370334581C458DEA3eaA7f7ADc650d2F2F8fCa9D
+export const Toronet_Dex_Address = "0x301dDc197F378Dd46C15fcc259FFB73Aa89Ae15b"////0x370334581C458DEA3eaA7f7ADc650d2F2F8fCa9D
 
 export const Toronet_Dex_ABI = [
 	{
@@ -1171,4 +1171,4 @@ export const Toronet_URI = "%5B%0A%09%7B%0A%09%09%22inputs%22%3A%20%5B%5D%2C%0A%
 
 
 
-export const TORONET_LIQUIDITY_ADDRESS = "0x58D364dff42CBbF463B09f0A15E19ED72585aa5D"
+export const TORONET_LIQUIDITY_ADDRESS = "0x2ef4f19d3B680f096a469fC150430D9eEDA38AE5"

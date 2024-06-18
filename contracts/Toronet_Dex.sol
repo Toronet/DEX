@@ -69,8 +69,8 @@ contract ToronetDex is Ownable {
     event GainsClaimed(address indexed user, bytes32 pairHash, uint256 amount);
     IToronetLiquidityToken public liquidityToken;
 
-    constructor(/*address[] memory _tokens,*/ address _ToronetLiquidityToken ) Ownable(msg.sender) {
-         liquidityToken = IToronetLiquidityToken(_ToronetLiquidityToken); // 
+    constructor( ) Ownable(msg.sender) {
+         liquidityToken = IToronetLiquidityToken(0x2ef4f19d3B680f096a469fC150430D9eEDA38AE5); // 
         isAdmin[msg.sender] = true;
     
         isAdmin[(0xB2D7A98ED24cC8bDec8889c5D80dF130657dc9Ac)]; // τEGP (Egyptian Pound Stablecoin)
@@ -177,8 +177,7 @@ function swapTokens(address _tokenA, address _tokenB, uint256 _amountIn) externa
     require(IERC20(pair.tokenB).balanceOf(address(this)) >= amountOutAfterFee, "Insufficient tokenB balance in contract");
 
     IERC20(pair.tokenB).transfer(msg.sender, amountOutAfterFee); // Send swapped tokens to user
-    IERC20(pair.tokenB).transfer(address(this), fee); // Send fee to contract (for simplicity)
-
+ 
     pair.reserveA += _amountIn;
     pair.reserveB -= amountOut;
 
@@ -302,6 +301,65 @@ function previewClaimAllGains() external view returns (uint256 totalAmount) {
 
     return (amountOut, amountOutAfterFee);
 }
+
+
+
+    // Function to get pairs where the user has liquidity tokens
+    function getUserPairs(address _user) external view returns (bytes32[] memory) {
+        bytes32[] memory userPairs = new bytes32[](pairsLength);
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < pairsLength; i++) {
+            bytes32 pairHash = pairArray[i].pairHash;
+            if (balances[pairHash][_user] > 0) {
+                userPairs[count] = pairHash;
+                count++;
+            }
+        }
+
+        bytes32[] memory result = new bytes32[](count);
+        for (uint256 i = 0; i < count; i++) {
+            result[i] = userPairs[i];
+        }
+
+        return result;
+    }
+
+    // Function to get liquidity tokens held by the user for a pair
+    function getUserLiquidity(address _user, bytes32 _pairHash) external view returns (uint256 liquidity) {
+        return balances[_pairHash][_user];
+    }
+
+    // Function to get total gains (in token A) claimed by the user across all pairs
+    function getUserTotalGains(address _user) external view returns (uint256 totalGains) {
+        for (uint256 i = 0; i < pairsLength; i++) {
+            bytes32 pairHash = pairArray[i].pairHash;
+            totalGains += (balances[pairHash][_user] * pairs[pairHash].feeRate) / 100;
+        }
+        return totalGains;
+    }
+
+    // Function to get fee rate for a specific pair
+    function getFeeRate(bytes32 _pairHash) external view returns (uint256 feeRate) {
+        return pairs[_pairHash].feeRate;
+    }
+
+    // Function to get fee recipient for a specific pair
+    function getFeeToProvider(bytes32 _pairHash) external view returns (address feeToProvider) {
+        return pairs[_pairHash].feeToProvider;
+    }
+
+    // Function to check if a pair exists for given tokens
+    function isPairCreated(address _tokenA, address _tokenB) external view returns (bool) {
+        bytes32 pairHash = keccak256(abi.encodePacked(_tokenA, _tokenB));
+        return pairs[pairHash].tokenA != address(0);
+    }
+
+    // Function to check if the caller is an admin
+    function isUserAdmin() external view returns (bool) {
+        return isAdmin[msg.sender];
+    }
+
 
   function sqrt(uint256 x) internal pure returns (uint256 y) {
         uint256 z = (x + 1) / 2;

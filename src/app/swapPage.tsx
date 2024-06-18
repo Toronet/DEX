@@ -277,11 +277,11 @@ try{
               },
               {
                   "name": "to",
-                  "value": DEX_ADDRESS
+                  "value": Toronet_Dex_Address
               },
               {
                   "name": "val",
-                  "value":(amount).toString()
+                  "value":(amount).toString()  
               },
             
             ]
@@ -327,7 +327,7 @@ try{
 
   const updateSwapTokenInContract = async () => { // swap tokens on toronet // update information to the smart contract
     
-    let amount = ((swapAmount));
+    let amount = ((swapAmount* 1e18));
 
     let token1 = tokenAddresses[swapFromToken as TokenKeys];
     let token2 = tokenAddresses[swapToToken as TokenKeys];
@@ -335,83 +335,53 @@ try{
     let apiName2 = tokenAPIName[swapToToken as APInames];
     
 
-    {
+    try {
 
     let argument_Swap=  `${token1}|${token2}|${amount}`
-    fetch('https://testnet.toronet.org/api/keystore/', {
+   const response = await fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
       },
-   
       body: JSON.stringify({
-          "op": "callContractFunction",
-          "params": [
-              {
-                  "name": "addr",
-                  "value": userAddress  // this should be the address pf the user passed in 
-              },
-              {
-                  "name": "pwd",
-                  "value": userPassword // this should be the password
-              },
-              {
-                  "name": "contractaddress",
-                  "value": Toronet_Dex_Address
-              },
-              {
-                  "name": "functionname",
-                  "value": "swapTokens"
-              },
-              {
-                  "name": "functionarguments",
-                  "value": argument_Swap
-              },
-              {
-                  "name": "abi",
-                  "value": Toronet_URI
-              }
-            ]
-      })
-  })
-  .then(response => {
-      if (!response.ok) { 
+        op: "callContractFunction",
+        params: [
+          { name: "addr", value: userAddress },
+          { name: "pwd", value: userPassword },
+          { name: "contractaddress", value: Toronet_Dex_Address },
+          { name: "functionname", value: "swapTokens" },
+          { name: "functionarguments", value: argument_Swap },
+          { name: "abi", value: Toronet_URI },
+        ],
+      }),
+    });
 
-        if(response.status == 204 || response.status ==200  ){
-          console.log("okay")
-        
-        }
-          throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-  })
-  .then(data => {
-      // Check the response data for success
+    if (response.ok) {
+      const data = await response.json();
       if (data.status === true) {
-      
-          console.log("Function call successful");
-          setSnackbarMessage(`Successfully  Swap ${apiName1}    with   ${apiName2}`);
-          setTxnStatus('Success')
-          setOpenSnackbar(true);
-       
+        console.log("Function call successful");
+        setTxnStatus('Success');
+        setSnackbarMessage('Transaction successful!');
+        setOpenSnackbar(true);
       } else {
-          console.error("Function call failed");
-          setSnackbarMessage(`Failed To swap ${apiName1}    with   ${apiName2}`);
-          setOpenSnackbar(true);
-           
-          
+        console.error("Function call failed");
+        setSnackbarMessage(`Failed to swap ${apiName2} with ${apiName1} `);
+        setOpenSnackbar(true);
       }
-  
-     
-    })
-  .catch(error => {
-      console.error('Error:', error);
-  });
-
+    } else {
+      if (response.status === 204 || response.status === 200) {
+        console.log("okay");
+      }
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    setSnackbarMessage(`Successfully swapped  ${apiName2} for ${apiName1} `);
+    setOpenSnackbar(true);
+    return;
   }
-
-  
 }
+
   
 const handleCloseSnackbar = () => {
   setOpenSnackbar(false);
@@ -421,21 +391,24 @@ const handleCloseSnackbar = () => {
 const previewAmount = async () => {
   //calculateSwapAmount // IERC20 fromToken, IERC20 toToken, uint256 amount
 
-  let amount = ((swapAmount));
+  let amount = ((ethers.utils.parseEther(swapAmount.toString())));
 
     let tokenFrom = tokenAddresses[swapFromToken as TokenKeys];
     let tokenTo = tokenAddresses[swapToToken as TokenKeys];
 
     try {
-      const amountPreview = await contract.getAmountOut(tokenFrom,tokenTo,amount)
-      console.log(amountPreview.toString())
+  
+       const amountPreview= await contract.getAmountOut(tokenFrom,tokenTo,amount)
+      console.log( ethers.utils.formatEther( amountPreview[0].toString()) )
+      const _amountPreview=ethers.utils.formatEther( amountPreview[0].toString()) 
 
   
    
-      const response_ = `You will recieve ${amountPreview.toString()} ${swapToToken}`
+      const response_ = `You will recieve ${_amountPreview} ${swapToToken}`
     
       setestimatedTokenShares(response_)
       setSnackbarMessage(response_);
+      setTxnStatus("Success")
       setOpenSnackbar(true);
    
     ;

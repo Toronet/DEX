@@ -120,6 +120,27 @@ const AddLiquidity = () => {
     }
   }
 
+  async function getBalance2(address: string) {
+    try {
+      let tokenAddress = tokenAddresses[addLiquidityToken2 as TokenKeys];
+
+      // Create a new contract instance with the ERC-20 token address and ABI
+      const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, provider);
+
+      // Fetch the balance
+      const balance = await tokenContract.balanceOf(address);
+
+      // Convert the balance from Wei to Ether (assuming the token has 18 decimals)
+      const balanceInEther = ethers.utils.formatUnits(balance, 18);
+
+      return balanceInEther;
+
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      throw error;
+    }
+  }
+
   async function addAllTokensToLiquidty() {
     let amount1 = addLiquidityAmount1 * 1e18;
     let amount2 = addLiquidityAmount2 * 1e18;
@@ -229,8 +250,12 @@ const AddLiquidity = () => {
     let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
 
     const iscreated = await isPairCreated(token1, token2);
+    console.log(await getBalance(userAddress))
+    console.log(await getBalance2(userAddress))
+    console.log((addLiquidityAmount1).toString())
+    console.log((addLiquidityAmount2).toString())
 
-    if (iscreated && (await getBalance(userAddress)).toString() >= (addLiquidityAmount1).toString() && (await getBalance(userAddress)).toString() >= (addLiquidityAmount2).toString()) {
+    if (iscreated ) {
       try {
         const response = await fetch(getApiUrl(apiName1), {
           method: 'POST',
@@ -243,7 +268,7 @@ const AddLiquidity = () => {
               { name: "client", value: userAddress },
               { name: "clientpwd", value: userPassword },
               { name: "to", value: Toronet_Dex_Address },
-              { name: "val", value: (amount1 / 1e18).toString() },
+              { name: "val", value: (addLiquidityAmount1).toString() },
             ],
           }),
         });
