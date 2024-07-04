@@ -1,0 +1,49 @@
+.pool-details {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.pool-details h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.pool-item {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #fafafa;
+    transition: transform 0.3s;
+}
+
+.pool-item:hover {
+    transform: translateY(-5px);
+}
+
+.pool-details ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.pool-details li {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #555;
+}
+
+.pool-details li strong {
+    color: #000;
+}
+
+.pool-details .error {
+    color: red;
+    margin-top: 20px;
+}

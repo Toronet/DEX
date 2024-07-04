@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import AddLiquidity from './addLiquidity'; 
+import createPool from '././createPool
 import HomePage from './swapPage';
+import PoolDetails from './poolDetails';
 import './Nav.css'; // Import CSS file for styling
 
 const Navigation = () => {
@@ -40,6 +41,8 @@ const Navigation = () => {
         {showSwap && <HomePage />}
         {showAddLiquidity && <AddLiquidity />}
       </div>
+      
+      <PoolDetails/>
     </div>
   );
 };
