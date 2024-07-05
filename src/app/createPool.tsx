@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { tokenAddresses, tokenAPIName, Toronet_Dex_Address, Toronet_Dex_ABI } from "./constants";
 import { ethers } from "ethers";
 import { Snackbar, Slide, SnackbarContent, SlideProps } from "@material-ui/core";
@@ -14,7 +14,7 @@ function SlideTransition(props: React.JSX.IntrinsicAttributes & SlideProps) {
   return <Slide {...props} direction="left" />;
 }
 
-const createPool = () => {
+const CreatePool = () => {
   const [userAddress, setUserAddress] = useState("");
   const [userPassword, setPassword] = useState("");
   const [poolToken1, setPoolToken1] = useState("");
@@ -91,7 +91,7 @@ const createPool = () => {
     let apiName2 = tokenAPIName[poolToken1 as keyof typeof tokenAPIName];
 
     try {
-      let argument_createPool = `${poolName}|${amount1}|${amount2}|${swapFee}|${feeReceiver}`;
+      let argument_createPool = `${token1},${token2},${poolName},${amount1},${amount2},${swapFee},${feeReceiver}`;
       const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: {
@@ -164,9 +164,17 @@ const createPool = () => {
           onChange={(e) => setPoolToken1(e.target.value)}
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
         >
-          <option value="">Select Token 1</option>
-          <option value="TokenA">Token A</option>
-          <option value="TokenB">Token B</option>
+          <option value="">Select Token</option>
+          <option value="tEGB">tEGB</option>
+          <option value="tKSH">τKSH</option>
+          <option value="tNGN">τNGN</option>
+          <option value="tZAR">τZAR</option>
+          <option value="tUSD">τUSD</option>
+          <option value="tEURO">τEURO</option>
+          <option value="tPOUND">τPOUND</option>
+          <option value="tETH">τETH</option>
+          <option value="ESPEES">ESPEES</option>
+          <option value="ASPR">ASPR</option>
         </select>
       </div>
       <div className="mb-4">
@@ -175,9 +183,17 @@ const createPool = () => {
           onChange={(e) => setPoolToken2(e.target.value)}
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
         >
-          <option value="">Select Token 2</option>
-          <option value="TokenA">Token A</option>
-          <option value="TokenB">Token B</option>
+          <option value="">Select Token</option>
+          <option value="tEGB">tEGB</option>
+          <option value="tKSH">τKSH</option>
+          <option value="tNGN">τNGN</option>
+          <option value="tZAR">τZAR</option>
+          <option value="tUSD">τUSD</option>
+          <option value="tEURO">τEURO</option>
+          <option value="tPOUND">τPOUND</option>
+          <option value="tETH">τETH</option>
+          <option value="ESPEES">ESPEES</option>
+          <option value="ASPR">ASPR</option>
         </select>
       </div>
       <div className="mb-4">
@@ -225,20 +241,17 @@ const createPool = () => {
 
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
         onClose={handleCloseSnackbar}
         TransitionComponent={SlideTransition}
+        autoHideDuration={3000}
       >
         <SnackbarContent
           message={snackbarMessage}
-          style={{
-            backgroundColor: txnStatus === 'Success' ? 'green' : 'red',
-            color: 'white',
-          }}
+          style={{ backgroundColor: 'green' }}
         />
       </Snackbar>
     </div>
   );
 };
 
-export default createPool;
+export default CreatePool;

@@ -1,11 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { Toronet_Dex_Address, Toronet_Dex_ABI } from './constants';
-import { ethers } from 'ethers';
-import './PoolDetails.css'; // Import the CSS file for styling
+/* eslint-disable react-hooks/exhaustive-deps */
 
-const PoolDetails = () => {
+
+import React, { useState, useEffect } from 'react';
+import { Toronet_Dex_Address, Toronet_Dex_ABI, tokenAddresses } from './constants';
+import { ethers } from 'ethers';
+import './PoolDetails.css';
+
+const PoolDetails = ({ onPoolSelect},{ selectedPool } ) => {
+
+    
     const [poolDetailsList, setPoolDetailsList] = useState([]);
     const [error, setError] = useState(null);
+
+    const getTokenSymbol = (address) => {
+        for (const [symbol, addr] of Object.entries(tokenAddresses)) {
+            if (addr.toLowerCase() === address.toLowerCase()) {
+                return symbol;
+            }
+        }
+        return 'Unknown';
+    };
 
     const rpcURL = 'https://testnet.toronet.org/rpc/';
     const provider = new ethers.providers.JsonRpcProvider(rpcURL);
@@ -21,17 +35,16 @@ const PoolDetails = () => {
                     const pool = await contract.indexToPool(i);
                     const name = pool.name;
                     const poolAddr = pool.poolAddress;
-                    const tokenA = pool.tokenA;
-                    const tokenB = pool.tokenB;
+                    const tokenASymbol = getTokenSymbol(pool.tokenA);
+                    const tokenBSymbol = getTokenSymbol(pool.tokenB);
                     const index = pool.index;
-                    const swapFee =pool.swapFee.toString();
+                    const swapFee = pool.swapFee.toString();
 
                     poolDetails.push({
                         name,
-                        tokenA,
-                        tokenB,
+                        tokenA: tokenASymbol,
+                        tokenB: tokenBSymbol,
                         index: index.toNumber(),
-                    
                         poolAddress: poolAddr,
                         swapFee,
                     });
@@ -47,6 +60,7 @@ const PoolDetails = () => {
         fetchPoolDetails();
     }, [contract]);
 
+    
     return (
         <div className="pool-details">
             <h2>Pool Details</h2>
@@ -54,14 +68,14 @@ const PoolDetails = () => {
                 <p className="error">{error}</p>
             ) : (
                 poolDetailsList.map((poolDetails, index) => (
-                    <div key={index} className="pool-item">
+                    <div key={index} className="pool-item" onClick={() => onPoolSelect(poolDetails)}>
                         <ul>
-                        <li><strong>Name:</strong> {poolDetails.name}</li>
-                        <li><strong>Pool Address:</strong> {poolDetails.poolAddress}</li>
-                            <li><strong>Token A Address:</strong> {poolDetails.tokenA}</li>
-                            <li><strong>Token B Address:</strong> {poolDetails.tokenB}</li>
+                            <li><strong>Name:</strong> {poolDetails.name}</li>
+                            <li><strong>Pool Address:</strong> {poolDetails.poolAddress}</li>
+                            <li><strong>Token A:</strong> {poolDetails.tokenA}</li>
+                            <li><strong>Token B:</strong> {poolDetails.tokenB}</li>
                             <li><strong>Index:</strong> {poolDetails.index}</li>
-                            <li><strong>Swap Fee percentage :</strong> {poolDetails.swapFee}</li>
+                            <li><strong>Swap Fee:</strong> {poolDetails.swapFee}</li>
                         </ul>
                     </div>
                 ))
@@ -69,5 +83,7 @@ const PoolDetails = () => {
         </div>
     );
 };
+
+
 
 export default PoolDetails;

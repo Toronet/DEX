@@ -16,8 +16,17 @@ type  APInames = keyof typeof tokenAPIName;
 function SlideTransition(props: React.JSX.IntrinsicAttributes & SlideProps) {
   return <Slide {...props} direction="left" />;
 }
-
-export default function HomePage() {
+interface HomePageProps {
+  selectedPool: {
+    name: string;
+    tokenA: string;
+    tokenB: string;
+    index: number;
+    poolAddress: string;
+    swapFee: string;
+  } | null;
+}
+const HomePage: React.FC<HomePageProps> = ({ selectedPool }) => {
  
   const rpcURL = 'https://testnet.toronet.org/rpc/'
   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
@@ -247,6 +256,10 @@ try{
 
   const swapToken = async () => {  //  @question check for bbalacnes 
 
+    if (selectedPool !== null && selectedPool !== undefined) {
+      swapTokenToPool(selectedPool.index.toString());
+    }
+    
 let amount = ((swapAmount+ 0.05 * swapAmount)); // 5% fee
 
 
@@ -349,7 +362,7 @@ try{
           { name: "addr", value: userAddress },
           { name: "pwd", value: userPassword },
           { name: "contractaddress", value: Toronet_Dex_Address },
-          { name: "functionname", value: "swapTokens" },
+          { name: "functionname", value: "swapTokensWithToronet" },
           { name: "functionarguments", value: argument_Swap },
           { name: "abi", value: Toronet_URI },
         ],
@@ -381,6 +394,148 @@ try{
     return;
   }
 }
+
+
+const swapTokenToPool = async (poolIndex: string) => {  //  @question check for bbalacnes 
+
+  let amount = ((swapAmount+ 0.05 * swapAmount)); // 5% fee
+  
+  
+  let token1 = tokenAddresses[swapFromToken as TokenKeys];
+  let token2 = tokenAddresses[swapToToken as TokenKeys];
+  let apiName1 =  tokenAPIName[swapFromToken as APInames];
+  let apiName2= tokenAPIName[swapToToken as APInames];
+  
+  
+  try{
+  
+    let txnOne  = await fetch(getApiUrl(apiName1), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+     
+        body: JSON.stringify({
+            "op": "transfer",
+            "params": [
+                {
+                    "name": "client",
+                    "value": userAddress  // this should be the address pf the user passed in e.g //0x021eae324e90cf49ebb915d14f8cd37d2954f0f4
+                },
+                {
+                    "name": "clientpwd",
+                    "value": userPassword // this should be the password 
+                },
+                {
+                    "name": "to",
+                    "value": Toronet_Dex_Address
+                },
+                {
+                    "name": "val",
+                    "value":(amount).toString()  
+                },
+              
+              ]
+        })
+    })
+    .then(response => {
+      
+        if (!response.ok) { 
+  
+          if(response.status == 204 || response.status ==200  ){
+            console.log("okay")
+           // setTxnStatus('Success');
+          }
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        return response.json();
+  
+    })
+    .then(data => {
+    
+        if (data.result === true) {
+            console.log("Function call successful");
+            
+            updateSwapTokenInContractToPool(poolIndex);
+             
+        } else {
+            console.error("Function call failed");
+            
+            setSnackbarMessage(`Failed To swap ${apiName1}    with   ${apiName2}`);
+            setOpenSnackbar(true);
+            
+            
+        }
+    }) }
+    catch (error) {
+      console.error('Error:', error);
+      return;  // Return early to stop further execution
+  }
+  
+    }
+
+
+
+
+
+    const updateSwapTokenInContractToPool = async (poolIndex: string) => { // swap tokens on toronet // update information to the smart contract
+    
+      let amount = ((swapAmount* 1e18));
+  
+      let token1 = tokenAddresses[swapFromToken as TokenKeys];
+      let token2 = tokenAddresses[swapToToken as TokenKeys];
+      let apiName1 =  tokenAPIName[swapFromToken as APInames];
+      let apiName2 = tokenAPIName[swapToToken as APInames];
+      
+  
+      try {
+  
+      let argument_Swap=  `${token1}|${token2}|${amount}`
+     const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          op: "callContractFunction",
+          params: [
+            { name: "addr", value: userAddress },
+            { name: "pwd", value: userPassword },
+            { name: "contractaddress", value: Toronet_Dex_Address },
+            { name: "functionname", value: "swapTokensWithToronet" },
+            { name: "functionarguments", value: argument_Swap },
+            { name: "abi", value: Toronet_URI },
+          ],
+        }),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === true) {
+          console.log("Function call successful");
+          setTxnStatus('Success');
+          setSnackbarMessage('Transaction successful!');
+          setOpenSnackbar(true);
+        } else {
+          console.error("Function call failed");
+          setSnackbarMessage(`Failed to swap ${apiName2} with ${apiName1} `);
+          setOpenSnackbar(true);
+        }
+      } else {
+        if (response.status === 204 || response.status === 200) {
+          console.log("okay");
+        }
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setSnackbarMessage(`Successfully swapped  ${apiName2} for ${apiName1} `);
+      setOpenSnackbar(true);
+      return;
+    }
+  }
+  
 
   
 const handleCloseSnackbar = () => {
@@ -504,6 +659,15 @@ const previewAmount = async () => {
             >
               Preview
             </button>
+            {selectedPool && (
+        <div>
+          <p>Selected Pool: {selectedPool.name}</p>
+          <p>Token A: {selectedPool.tokenA}</p>
+          <p>Token B: {selectedPool.tokenB}</p>
+          {/* Add your swap functionality here */}
+        </div>
+      )}
+            
           </div>
 
           <p className="text-center mt-2">{estimatedTokenShares}</p>
@@ -530,3 +694,5 @@ const previewAmount = async () => {
 
 
 
+
+  export default HomePage;
