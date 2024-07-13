@@ -106,11 +106,11 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
     return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
   }
 
-  async function isPairCreated(token1: string, token2: string) {
+  async function isPairCreated(token1: string) {
     let apiName1 = tokenAPIName[addLiquidityToken1 as APInames];
     let apiName2 = tokenAPIName[addLiquidityToken2 as APInames];
     const contract = new ethers.Contract(Toronet_Dex_Address, Toronet_Dex_ABI, provider);
-    const isCreated = await contract.isPairCreated(token1, token2);
+    const isCreated = await contract.isPairCreated(token1);
 
     return isCreated;
   }
@@ -166,7 +166,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
     let apiName2 = tokenAPIName[addLiquidityToken1 as APInames];
 
     try {
-      let argument_addLiquidity = `${token1}|${token2}|${amount1}|${amount2}`;
+      let argument_addLiquidity = `${token1}|${amount1}`;
       const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: {
@@ -194,7 +194,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
           setOpenSnackbar(true);
         } else {
           console.error("Function call failed");
-          setSnackbarMessage(`Failed to add ${apiName2} and ${apiName1} to the liquidity pool`);
+          setSnackbarMessage(`Failed to add ${apiName2}  to the liquidity pool`);
           setOpenSnackbar(true);
         }
       } else {
@@ -205,7 +205,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
       }
     } catch (error) {
       console.error('Error:', error);
-      setSnackbarMessage(`Failed to add ${apiName2} and ${apiName1} to the liquidity pool`);
+      setSnackbarMessage(`Failed to add ${apiName2}  to the liquidity pool`);
       setOpenSnackbar(true);
       return;
     }
@@ -274,7 +274,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
     let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
     let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
 
-    const iscreated = await isPairCreated(token1, token2);
+    const iscreated = await isPairCreated(token1);
     console.log(await getBalance(userAddress))
     console.log(await getBalance2(userAddress))
     console.log((addLiquidityAmount1).toString())
@@ -303,7 +303,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
           if (data.result === true) {
             console.log("Function call successful");
             setTxnStatus('Success');
-            addSecondToToLiquidity();
+            addAllTokensToLiquidty();
           } else {
             console.error("Function call failed");
             setSnackbarMessage(`Failed to add ${apiName1} to the liquidity pool`);
@@ -346,7 +346,7 @@ const addLiquidityToPool = async (poolIndex: string) => {
   let token1 = tokenAddresses[addLiquidityToken1 as TokenKeys];
   let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
 
-  const iscreated = await isPairCreated(token1, token2);
+  const iscreated = await isPairCreated(token1);
   console.log(await getBalance(userAddress))
   console.log(await getBalance2(userAddress))
   console.log((addLiquidityAmount1).toString())
@@ -375,7 +375,7 @@ const addLiquidityToPool = async (poolIndex: string) => {
         if (data.result === true) {
           console.log("Function call successful");
           setTxnStatus('Success');
-          addSecondToToLiquidityPool(poolIndex);
+          addAllTokensToLiquidtyPool(poolIndex);
         } else {
           console.error("Function call failed");
           setSnackbarMessage(`Failed to add ${apiName1} to the liquidity pool`);
@@ -546,7 +546,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
         </select>
       </div>
       <div className="mb-4">
-        <select
+        {/* <select
           value={addLiquidityToken2}
           onChange={(e) => setAddLiquidityToken2(e.target.value)}
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
@@ -562,7 +562,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
           <option value="tETH">τETH</option>
           <option value="ESPEES">ESPEES</option>
           <option value="ASPR">ASPR</option>
-        </select>
+        </select> */}
       </div>
       <div className="mb-4">
         <input
@@ -573,7 +573,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
           placeholder="Enter Amount 1"
         />
       </div>
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <input
           type="number"
           value={addLiquidityAmount2}
@@ -581,7 +581,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
           placeholder="Enter Amount 2"
         />
-      </div>
+      </div> */}
       <button
          onClick={addLiquidity}
        

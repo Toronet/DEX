@@ -4,13 +4,15 @@
 import React, { useState, useEffect, useRef } from "react";
 
 
-import { Toronet_Dex_Address, Toronet_Dex_ABI , Toronet_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD} from "./constants";
+import { Toronet_Dex_Address, Toronet_Dex_ABI , Toronet_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD,exchangeRateName} from "./constants";
 
 import { ethers } from "ethers";
 import { Snackbar, Slide, SnackbarContent, SlideProps } from "@material-ui/core";
 
 type TokenKeys = keyof typeof tokenAddresses;
 type  APInames = keyof typeof tokenAPIName;
+
+type  rateName =  keyof typeof exchangeRateName;
 
 
 function SlideTransition(props: React.JSX.IntrinsicAttributes & SlideProps) {
@@ -227,9 +229,9 @@ try{
 
   }
 
-
+let amountToRecieve: number;
   async function getExchangeRates() {
-   
+    let amount = ((swapAmount)); // 5% fee
     try {
       const op = 'getexchangerates';
       const baseUrl = 'http://testnet.toronet.org/api/query';
@@ -242,16 +244,30 @@ try{
           'Content-Type': 'application/json'
         }
       });
+      //rateName   // exchangeRateName
   
+      let rateName1 =  (exchangeRateName[swapFromToken as rateName]).toString();
+      let rateName2 =  exchangeRateName[swapToToken as rateName];
+      const data = await response.json();
+      console.log(data)
+
+      let amountToken1  = data[rateName1];
+      let amountToken2  = data[rateName2];
+
+       amountToRecieve =  (amountToken1 * amount )/amountToken2;
+    
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      console.log('Received exchange rates:', data);
+      }   
+
+    
+      //console.log(`rateNAme1`,rateName1);
+      console.log('Received exchange rates:', amountToRecieve);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+
+    return amountToRecieve;
 }
 
   const swapToken = async () => {  //  @question check for bbalacnes 
@@ -341,6 +357,7 @@ try{
   const updateSwapTokenInContract = async () => { // swap tokens on toronet // update information to the smart contract
     
     let amount = ((swapAmount* 1e18));
+    let amountOut = await getExchangeRates()
 
     let token1 = tokenAddresses[swapFromToken as TokenKeys];
     let token2 = tokenAddresses[swapToToken as TokenKeys];
@@ -350,7 +367,7 @@ try{
 
     try {
 
-    let argument_Swap=  `${token1}|${token2}|${amount}`
+    let argument_Swap=  `${token1}|${token2}|${amount}|${amountOut}`
    const response = await fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
@@ -482,6 +499,7 @@ const swapTokenToPool = async (poolIndex: string) => {  //  @question check for 
     const updateSwapTokenInContractToPool = async (poolIndex: string) => { // swap tokens on toronet // update information to the smart contract
     
       let amount = ((swapAmount* 1e18));
+      let amountOut = await getExchangeRates()
   
       let token1 = tokenAddresses[swapFromToken as TokenKeys];
       let token2 = tokenAddresses[swapToToken as TokenKeys];
@@ -491,7 +509,7 @@ const swapTokenToPool = async (poolIndex: string) => {  //  @question check for 
   
       try {
   
-      let argument_Swap=  `${token1}|${token2}|${amount}`
+      let argument_Swap=  `${token1}|${token2}|${amount}|${amountOut}`
      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: {
@@ -545,18 +563,12 @@ const handleCloseSnackbar = () => {
 
 const previewAmount = async () => {
   //calculateSwapAmount // IERC20 fromToken, IERC20 toToken, uint256 amount
+ 
 
-  let amount = ((ethers.utils.parseEther(swapAmount.toString())));
-
-    let tokenFrom = tokenAddresses[swapFromToken as TokenKeys];
-    let tokenTo = tokenAddresses[swapToToken as TokenKeys];
-
+    
     try {
   
-       const amountPreview= await contract.getAmountOut(tokenFrom,tokenTo,amount)
-      console.log( ethers.utils.formatEther( amountPreview[0].toString()) )
-      const _amountPreview=ethers.utils.formatEther( amountPreview[0].toString()) 
-
+      const _amountPreview=await getExchangeRates()
   
    
       const response_ = `You will recieve ${_amountPreview} ${swapToToken}`
@@ -566,7 +578,7 @@ const previewAmount = async () => {
       setTxnStatus("Success")
       setOpenSnackbar(true);
    
-    ;
+    
     }
     catch(error){
       setSnackbarMessage("Invalid Pair");
@@ -645,30 +657,33 @@ const previewAmount = async () => {
             placeholder="Enter Amount to Swap"
           />
 
-          <div className="flex justify-between">
-            <button
-              onClick={swapToken}
-              className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
-            >
-              Swap
-            </button>
+<div className="flex justify-between">
+  <button
+    onClick={swapToken}
+    className="py-1.5 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-1"
+  >
+    Swap
+  </button>
 
-            <button
-              onClick={previewAmount}
-              className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
-            >
-              Preview
-            </button>
-            {selectedPool && (
-        <div>
-          <p>Selected Pool: {selectedPool.name}</p>
-          <p>Token A: {selectedPool.tokenA}</p>
-          <p>Token B: {selectedPool.tokenB}</p>
-          {/* Add your swap functionality here */}
-        </div>
-      )}
+  <button
+    onClick={previewAmount}
+    className="py-1.5 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-1"
+  >
+    Preview
+  </button>
+</div>
+{selectedPool && (
+  <div>
+    <p>Selected Pool: {selectedPool.name}</p>
+    <p>Token A: {selectedPool.tokenA}</p>
+    <p>Token B: {selectedPool.tokenB}</p>
+    {/* Add your swap functionality here */}
+  </div>
+)}
+
+      
             
-          </div>
+          
 
           <p className="text-center mt-2">{estimatedTokenShares}</p>
         </div>

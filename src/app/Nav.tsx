@@ -9,13 +9,13 @@ import { tokenAddresses, Toronet_Dex_ABI, Toronet_Dex_Address } from './constant
 import { ethers } from 'ethers';
 
 const Navigation = () => {
- 
   const [showSwap, setShowSwap] = useState<boolean>(true); // Show swap page by default
   const [showCreatePool, setShowCreatePool] = useState<boolean>(false);
   const [selectedPool, setSelectedPool] = useState<any>(null); // Update type to match expected type
   const [poolDetailsList, setPoolDetailsList] = useState<any[]>([]); // Initialize with an empty array
   const [error, setError] = useState<string | null>(null); // Update type to string | null
   const [showAddLiquidity, setShowAddLiquidity] = useState<boolean>(false);
+  const [showPoolDetails, setShowPoolDetails] = useState<boolean>(false);
 
   const rpcURL = 'https://testnet.toronet.org/rpc/';
   const provider = new ethers.providers.JsonRpcProvider(rpcURL);
@@ -70,18 +70,28 @@ const Navigation = () => {
     setShowAddLiquidity(true);
     setShowSwap(false);
     setShowCreatePool(false);
+    setShowPoolDetails(false);
   };
 
   const toggleSwap = () => {
     setShowSwap(true);
     setShowAddLiquidity(false);
     setShowCreatePool(false);
+    setShowPoolDetails(false);
   };
 
   const toggleCreatePool = () => {
     setShowCreatePool(true);
     setShowSwap(false);
     setShowAddLiquidity(false);
+    setShowPoolDetails(false);
+  };
+
+  const togglePoolDetails = () => {
+    setShowPoolDetails(true);
+    setShowSwap(false);
+    setShowAddLiquidity(false);
+    setShowCreatePool(false);
   };
 
   const handlePoolSelect = (pool: any) => {
@@ -89,9 +99,10 @@ const Navigation = () => {
     setShowSwap(true);
     setShowAddLiquidity(true);
     setShowCreatePool(false);
+    setShowPoolDetails(false);
     setAddLiquidityFunction(() => () => AddLiquidity(pool.index.toString()));
-    
   };
+
   return (
     <div className="container">
       <h1 className="header">Toronet DEX</h1>
@@ -114,27 +125,22 @@ const Navigation = () => {
         >
           Create Pool
         </button>
+        <button
+          onClick={togglePoolDetails}
+          className={showPoolDetails ? 'activeButton' : 'inactiveButton'}
+        >
+          Pool Details
+        </button>
       </div>
       
       <div className="pageContainer">
         {showSwap && <HomePage selectedPool={selectedPool} />}
         {showAddLiquidity && <AddLiquidity selectedPool={selectedPool} addLiquidityToPool={function (poolIndex: string): void {
           throw new Error('Function not implemented.');
-        } } />}
+        }} />}
         {showCreatePool && <CreatePool />}
+        {showPoolDetails && <PoolDetails onPoolSelect={handlePoolSelect}  />}
       </div>
-      
-      <PoolDetails 
-        onPoolSelect={handlePoolSelect}
-      />
-
-<div className="pageContainer">
-  {showSwap && <HomePage selectedPool={selectedPool} />}
-  {showAddLiquidity && <AddLiquidity selectedPool={selectedPool} addLiquidityToPool={function (poolIndex: string): void {
-          throw new Error('Function not implemented.');
-        } } />}
-  {showCreatePool && <CreatePool />}
-</div>
     </div>
   );
 };
@@ -144,3 +150,5 @@ function setAddLiquidityFunction(arg0: () => () => any) {
 }
 
 export default Navigation;
+
+//   {showPoolDetails && <PoolDetails onPoolSelect={handlePoolSelect} poolDetailsList={poolDetailsList} />}
