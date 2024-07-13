@@ -76,6 +76,7 @@ const PoolDetails = ({ onPoolSelect},{ selectedPool } ) => {
                             <li><strong>Token B:</strong> {poolDetails.tokenB}</li>
                             <li><strong>Index:</strong> {poolDetails.index}</li>
                             <li><strong>Swap Fee:</strong> {poolDetails.swapFee}</li>
+                            <button className="joinPoolButton" onClick={() => onPoolSelect(pool)}>Join Pool</button>
                         </ul>
                     </div>
                 ))

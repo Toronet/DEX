@@ -90,7 +90,38 @@ const CreatePool = () => {
     let apiName1 = tokenAPIName[poolToken2 as keyof typeof tokenAPIName];
     let apiName2 = tokenAPIName[poolToken1 as keyof typeof tokenAPIName];
 
+
+    function getApiUrl( apiName1: string) {
+      return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
+    }
+async function send ( apiName1: string){
+  try {
+    const response = await fetch(getApiUrl(apiName1), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        op: "transfer",
+        params: [
+          { name: "client", value: userAddress },
+          { name: "clientpwd", value: userPassword },
+          { name: "to", value: Toronet_Dex_Address },
+          { name: "val", value: (amount1).toString() },
+        ],
+      }),
+    });
+}
+catch{
+
+}
+}
+
     try {
+
+
+        send(apiName1);
+        send(apiName2);
       let argument_createPool = `${token1},${token2},${poolName},${amount1},${amount2},${swapFee},${feeReceiver}`;
       const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
@@ -147,18 +178,21 @@ const CreatePool = () => {
           {isConnected ? `Connected: ${shortAddress}` : "Connect To Toronet"}
         </button>
       </div>
-
-      <h2 className="text-xl font-semibold mb-4">Create Pool</h2>
+  
+      <h2 className="text-xl font-semibold mb-4">Create a New Liquidity Pool</h2>
+      
       <div className="mb-4">
         <input
           type="text"
           value={poolName}
           onChange={(e) => setPoolName(e.target.value)}
-          placeholder="Pool Name"
+          placeholder="Enter Pool Name"
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
         />
       </div>
+  
       <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Token A</label>
         <select
           value={poolToken1}
           onChange={(e) => setPoolToken1(e.target.value)}
@@ -177,7 +211,9 @@ const CreatePool = () => {
           <option value="ASPR">ASPR</option>
         </select>
       </div>
+  
       <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Token B</label>
         <select
           value={poolToken2}
           onChange={(e) => setPoolToken2(e.target.value)}
@@ -196,49 +232,58 @@ const CreatePool = () => {
           <option value="ASPR">ASPR</option>
         </select>
       </div>
+  
       <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Amount of Token A</label>
         <input
           type="number"
           value={initialAmount1}
           onChange={(e) => setInitialAmount1(Number(e.target.value))}
-          placeholder="Initial Amount 1"
+          placeholder="Enter Amount"
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
         />
       </div>
+  
       <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Amount of Token B</label>
         <input
           type="number"
           value={initialAmount2}
           onChange={(e) => setInitialAmount2(Number(e.target.value))}
-          placeholder="Initial Amount 2"
+          placeholder="Enter Amount"
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
         />
       </div>
+  
       <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Swap Fee (%)</label>
         <input
           type="number"
           value={swapFee}
           onChange={(e) => setSwapFee(Number(e.target.value))}
-          placeholder="Swap Fee"
+          placeholder="Enter Swap Fee Percentage"
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
         />
       </div>
+  
       <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Fee Receiver Address</label>
         <input
           type="text"
           value={feeReceiver}
           onChange={(e) => setFeeReceiver(e.target.value)}
-          placeholder="Fee Receiver"
+          placeholder="Enter Fee Receiver Address"
           className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
         />
       </div>
+  
       <button
         onClick={createPool}
         className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
       >
         Create Pool
       </button>
-
+  
       <Snackbar
         open={openSnackbar}
         onClose={handleCloseSnackbar}
@@ -252,6 +297,7 @@ const CreatePool = () => {
       </Snackbar>
     </div>
   );
+  
 };
 
 export default CreatePool;
