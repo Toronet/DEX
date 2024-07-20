@@ -7,65 +7,19 @@ import PoolDetails from './poolDetails';
 import './Nav.css'; // Import CSS file for styling
 import { tokenAddresses, Toronet_Dex_ABI, Toronet_Dex_Address } from './constants';
 import { ethers } from 'ethers';
+import { contract, fetchPoolDetails, getTokenSymbol } from '@/libs/poolDetails';
+import usePoolDetails from '@/hooks/usePoolDetails';
 
 const Navigation = () => {
   const [showSwap, setShowSwap] = useState<boolean>(true); // Show swap page by default
   const [showCreatePool, setShowCreatePool] = useState<boolean>(false);
   const [selectedPool, setSelectedPool] = useState<any>(null); // Update type to match expected type
-  const [poolDetailsList, setPoolDetailsList] = useState<any[]>([]); // Initialize with an empty array
   const [error, setError] = useState<string | null>(null); // Update type to string | null
   const [showAddLiquidity, setShowAddLiquidity] = useState<boolean>(false);
   const [showPoolDetails, setShowPoolDetails] = useState<boolean>(false);
 
-  const rpcURL = 'https://testnet.toronet.org/rpc/';
-  const provider = new ethers.providers.JsonRpcProvider(rpcURL);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const contract = new ethers.Contract(Toronet_Dex_Address, Toronet_Dex_ABI, provider);
-
-  useEffect(() => {
-    const fetchPoolDetails = async () => {
-      try {
-        const poolIndex = await contract.poolIndex();
-        const poolDetails: any[] = [];
-
-        for (let i = 0; i < poolIndex.toNumber(); i++) { // Ensure toNumber() for poolIndex
-          const pool = await contract.indexToPool(i);
-          const name = pool.name;
-          const poolAddr = pool.poolAddress;
-          const tokenASymbol = getTokenSymbol(pool.tokenA);
-          const tokenBSymbol = getTokenSymbol(pool.tokenB);
-          const index = pool.index.toNumber(); // Ensure toNumber() for index
-          const swapFee = pool.swapFee.toString();
-
-          poolDetails.push({
-            name,
-            tokenA: tokenASymbol,
-            tokenB: tokenBSymbol,
-            index,
-            poolAddress: poolAddr,
-            swapFee,
-          });
-        }
-
-        setPoolDetailsList(poolDetails);
-      } catch (error) {
-        setError('Error fetching pool details. Please try again.');
-        console.error(error);
-      }
-    };
-
-    fetchPoolDetails();
-  }, [contract]);
-
-  const getTokenSymbol = (address: string) => {
-    for (const [symbol, addr] of Object.entries(tokenAddresses)) {
-      if (addr.toLowerCase() === address.toLowerCase()) {
-        return symbol;
-      }
-    }
-    return 'Unknown';
-  };
-
+  const { data: poolDetailsList, isLoading, mutate } = usePoolDetails();
+  
   const toggleAddLiquidity = () => {
     setShowAddLiquidity(true);
     setShowSwap(false);
