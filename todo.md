@@ -10,3 +10,4 @@ link..
 
 
 // Add 50:50 ratio wuth get exchange 
+// now add that it should revrt w if the amount out is greater than the balacne

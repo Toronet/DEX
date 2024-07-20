@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
 
-import { Toronet_Dex_Address, Toronet_Dex_ABI , Toronet_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD,exchangeRateName} from "./constants";
+import { Toronet_Dex_Address, Toronet_Dex_ABI , Toronet_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD,exchangeRateName, ERC20_ABI} from "./constants";
 
 import { ethers } from "ethers";
 import { Snackbar, Slide, SnackbarContent, SlideProps } from "@material-ui/core";
@@ -34,6 +34,8 @@ const HomePage: React.FC<HomePageProps> = ({ selectedPool }) => {
   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
 
   const contract = new ethers.Contract(Toronet_Dex_Address,Toronet_Dex_ABI,provider)
+
+
 
 
 
@@ -230,6 +232,7 @@ try{
   }
 
 let amountToRecieve: number;
+let amountOut: number
   async function getExchangeRates() {
     let amount = ((swapAmount)); // 5% fee
     try {
@@ -255,6 +258,9 @@ let amountToRecieve: number;
       let amountToken2  = data[rateName2];
 
        amountToRecieve =  (amountToken1 * amount )/amountToken2;
+      
+       let amountOutNumber = parseFloat(amountToRecieve.toString());
+        amountOut = Math.round(amountOutNumber);
     
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -262,18 +268,18 @@ let amountToRecieve: number;
 
     
       //console.log(`rateNAme1`,rateName1);
-      console.log('Received exchange rates:', amountToRecieve);
+      console.log('Received exchange rates:', amountOut);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
 
-    return amountToRecieve;
+    return amountOut;
 }
 
   const swapToken = async () => {  //  @question check for bbalacnes 
 
     if (selectedPool !== null && selectedPool !== undefined) {
-      swapTokenToPool(selectedPool.index.toString());
+      updateSwapTokenInContractToPool(selectedPool.index.toString());
     }
     
 let amount = ((swapAmount+ 0.05 * swapAmount)); // 5% fee
@@ -414,10 +420,20 @@ try{
 
 
 const swapTokenToPool = async (poolIndex: string) => {  //  @question check for bbalacnes 
-
+console.log(poolIndex)
   let amount = ((swapAmount+ 0.05 * swapAmount)); // 5% fee
-  
-  
+  let amountOut = await getExchangeRates();
+
+  //check for the balance
+  const tokenContract = new ethers.Contract( tokenAddresses[swapFromToken as TokenKeys],ERC20_ABI,provider)
+
+  let balanceOf  =  await tokenContract.balanceOf(Toronet_Dex_Address);
+
+  if (balanceOf<amountOut) {
+    setSnackbarMessage(`Insufficient Balanace`);
+    setOpenSnackbar(true);
+  }
+  else{
   let token1 = tokenAddresses[swapFromToken as TokenKeys];
   let token2 = tokenAddresses[swapToToken as TokenKeys];
   let apiName1 =  tokenAPIName[swapFromToken as APInames];
@@ -489,17 +505,21 @@ const swapTokenToPool = async (poolIndex: string) => {  //  @question check for 
       console.error('Error:', error);
       return;  // Return early to stop further execution
   }
-  
+  //Toronet_123
     }
-
+  }
 
 
 
 
     const updateSwapTokenInContractToPool = async (poolIndex: string) => { // swap tokens on toronet // update information to the smart contract
-    
-      let amount = ((swapAmount* 1e18));
-      let amountOut = await getExchangeRates()
+    console.log("1")
+      let amount = ((swapAmount).toString());
+      let _amountOut = await getExchangeRates();
+      let amountOutNumber = parseFloat(_amountOut.toString());
+      let amountOut = Math.round(amountOutNumber);
+      
+      console.log(amountOut)  // change this to whole number 
   
       let token1 = tokenAddresses[swapFromToken as TokenKeys];
       let token2 = tokenAddresses[swapToToken as TokenKeys];
@@ -509,7 +529,10 @@ const swapTokenToPool = async (poolIndex: string) => {  //  @question check for 
   
       try {
   
-      let argument_Swap=  `${token1}|${token2}|${amount}|${amountOut}`
+      let argument_Swap=  `${token1}|${token2}|${amount}|${poolIndex}|${amountOut}`
+      console.log(token1)
+      console.log(poolIndex)
+      console.log(userAddress)
      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: {
@@ -527,9 +550,11 @@ const swapTokenToPool = async (poolIndex: string) => {  //  @question check for 
           ],
         }),
       });
-  
+  console.log(token1)
       if (response.ok) {
         const data = await response.json();
+     
+        console.log(data)
         if (data.status === true) {
           console.log("Function call successful");
           setTxnStatus('Success');
