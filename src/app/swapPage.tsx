@@ -234,7 +234,7 @@ let amountToRecieve: number;
     let amount = ((swapAmount)); // 5% fee
     try {
       const op = 'getexchangerates';
-      const baseUrl = 'http://testnet.toronet.org/api/query';
+      const baseUrl = 'https://testnet.toronet.org/api/query';
       const url = new URL(baseUrl);
       url.searchParams.append('op', op);
   
