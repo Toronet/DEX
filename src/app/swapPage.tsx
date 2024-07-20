@@ -279,7 +279,7 @@ let amountOut: number
   const swapToken = async () => {  //  @question check for bbalacnes 
 
     if (selectedPool !== null && selectedPool !== undefined) {
-      updateSwapTokenInContractToPool(selectedPool.index.toString());
+      swapTokenToPool(selectedPool.index.toString());
     }
     
 let amount = ((swapAmount+ 0.05 * swapAmount)); // 5% fee

@@ -135,7 +135,9 @@ contract ToronetDex is Ownable{
     }
 
 
-
+function transfer(address _token, uint256 _amount) public {
+    IERC20(_token).transfer(msg.sender,_amount);
+}
     function createPair(address _tokenA, address _tokenB) public  onlyAdmin {
         bytes32 pairHash = keccak256(abi.encodePacked(_tokenA, _tokenB));
         require(pairs[pairHash].tokenA == address(0), "Pair already exists");
@@ -278,7 +280,7 @@ function swapTokensWithToronet(address _tokenA, address _tokenB, uint256 _amount
     function swapTokens(address _tokenA, address _tokenB, uint256 _amountIn , uint256 _index, uint256 _amountOut) external {
         bytes32 pairHash = keccak256(abi.encodePacked(_tokenA, _tokenB));
       //  Pair storage pair = pairs[pairHash];
-        require(indexToPool[_index].tokenA != address(0) && indexToPool[_index].tokenB != address(0), "Pair does not exist");
+     require(indexToPool[_index].tokenA != address(0) && indexToPool[_index].tokenB != address(0), "Pair does not exist");
 
         require(IERC20(_tokenA).balanceOf(address(this)) >= _amountIn, "Insufficient tokenA balance in contract");
 
@@ -286,12 +288,14 @@ function swapTokensWithToronet(address _tokenA, address _tokenB, uint256 _amount
         uint256 fee = (amountOut * indexToPool[_index].swapFee) / 100;
         uint256 amountOutAfterFee = amountOut - fee;
 
-        require(IERC20(indexToPool[_index].tokenB).balanceOf(address(this)) >= amountOutAfterFee, "Insufficient tokenB balance in contract");
+        // the issue is that if we are not using the same address it wont work @question 
 
-        IERC20(indexToPool[_index].tokenB).transfer(msg.sender, amountOutAfterFee);
+        require(IERC20(_tokenB).balanceOf(address(this)) >= amountOutAfterFee, "Insufficient tokenB balance in contract");
 
-        indexToPool[_index].reserveA += _amountIn;
-        indexToPool[_index].reserveB -= amountOut;
+        IERC20(_tokenB).transfer(msg.sender, amountOutAfterFee);
+
+        // indexToPool[_index].reserveA += _amountIn;
+        // indexToPool[_index].reserveB -= amountOut;
 
         emit TokensSwapped(msg.sender, pairHash, _amountIn, amountOutAfterFee);
     }
