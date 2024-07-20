@@ -521,7 +521,7 @@ const swapTokenToPool = async (poolIndex: string) => {  //  @question check for 
             { name: "addr", value: userAddress },
             { name: "pwd", value: userPassword },
             { name: "contractaddress", value: Toronet_Dex_Address },
-            { name: "functionname", value: "swapTokensWithToronet" },
+            { name: "functionname", value: "swapTokens" },
             { name: "functionarguments", value: argument_Swap },
             { name: "abi", value: Toronet_URI },
           ],
