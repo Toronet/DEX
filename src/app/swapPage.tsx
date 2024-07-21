@@ -211,7 +211,7 @@ try{
       if (data.result === true) {
           console.log("Function call successful");
            
-           updateSwapTokenInContract()
+           //updateSwapTokenInContract()
       } else {
           console.error("Function call failed");
       
@@ -276,11 +276,17 @@ let amountOut: number
     return amountOut;
 }
 
+
+ const _swapToken = async () => {
+  if (selectedPool !== null && selectedPool !== undefined) {
+  updateSwapTokenInContractToPool(selectedPool.index.toString());
+  }
+}
   const swapToken = async () => {  //  @question check for bbalacnes 
 
     if (selectedPool !== null && selectedPool !== undefined) {
-      swapTokenToPool(selectedPool.index.toString());
-    }
+      updateSwapTokenInContractToPool(selectedPool.index.toString());
+    }else{
     
 let amount = ((swapAmount+ 0.05 * swapAmount)); // 5% fee
 
@@ -417,7 +423,7 @@ try{
     return;
   }
 }
-
+  }
 
 const swapTokenToPool = async (poolIndex: string) => {  //  @question check for bbalacnes 
 console.log(poolIndex)
@@ -489,8 +495,9 @@ console.log(poolIndex)
     
         if (data.result === true) {
             console.log("Function call successful");
-            
-            updateSwapTokenInContractToPool(poolIndex);
+            setTxnStatus('Success');
+          setSnackbarMessage('Transaction successful!');
+          setOpenSnackbar(true);
              
         } else {
             console.error("Function call failed");
@@ -513,13 +520,22 @@ console.log(poolIndex)
 
 
     const updateSwapTokenInContractToPool = async (poolIndex: string) => { // swap tokens on toronet // update information to the smart contract
-    console.log("1")
-      let amount = ((swapAmount).toString());
+
+     
       let _amountOut = await getExchangeRates();
-      let amountOutNumber = parseFloat(_amountOut.toString());
-      let amountOut = Math.round(amountOutNumber);
-      
-      console.log(amountOut)  // change this to whole number 
+      let amountOutNumber = parseFloat((_amountOut).toString() );      
+      let amount = ethers.utils.parseEther(swapAmount.toString());
+
+// Assume _amountOut is also in ether
+let amountOutInWei = ethers.utils.parseEther(_amountOut.toString());
+
+// If you need to round, do it in wei to maintain precision
+let roundedAmountOutInWei = amountOutInWei.div(ethers.constants.WeiPerEther).mul(ethers.constants.WeiPerEther);
+
+// Convert back to ether for display purposes
+let amountOutInEther = roundedAmountOutInWei;
+
+      console.log("Eth",amountOutInEther.toString())  // change this to whole number 
   
       let token1 = tokenAddresses[swapFromToken as TokenKeys];
       let token2 = tokenAddresses[swapToToken as TokenKeys];
@@ -529,7 +545,7 @@ console.log(poolIndex)
   
       try {
   
-      let argument_Swap=  `${token1}|${token2}|${amount}|${poolIndex}|${amountOut}`
+      let argument_Swap=  `${token1}|${token2}|${amount}|${poolIndex}|${amountOutInEther}`
       console.log(token1)
       console.log(poolIndex)
       console.log(userAddress)
@@ -557,9 +573,8 @@ console.log(poolIndex)
         console.log(data)
         if (data.status === true) {
           console.log("Function call successful");
-          setTxnStatus('Success');
-          setSnackbarMessage('Transaction successful!');
-          setOpenSnackbar(true);
+          
+          swapTokenToPool(poolIndex);
         } else {
           console.error("Function call failed");
           setSnackbarMessage(`Failed to swap ${apiName2} with ${apiName1} `);

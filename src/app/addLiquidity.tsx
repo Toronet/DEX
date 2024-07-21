@@ -110,9 +110,12 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
     let apiName1 = tokenAPIName[addLiquidityToken1 as APInames];
     let apiName2 = tokenAPIName[addLiquidityToken2 as APInames];
     const contract = new ethers.Contract(Toronet_Dex_Address, Toronet_Dex_ABI, provider);
-    const isCreated = await contract.isPairCreated(token1);
+    console.log(token1)
+  
 
-    return isCreated;
+    console.log("Done")
+
+    return true;
   }
 
   async function getBalance(address: string) {
@@ -263,7 +266,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
   const addLiquidity = async () => {
     // check if pair has been created
     if (selectedPool !== null && selectedPool !== undefined) {
-      addLiquidityToPool(selectedPool.index.toString());
+      addAllTokensToLiquidtyPool(selectedPool.index.toString());
     }
     
  else{
@@ -347,11 +350,7 @@ const addLiquidityToPool = async (poolIndex: string) => {
   let token2 = tokenAddresses[addLiquidityToken2 as TokenKeys];
 
   const iscreated = await isPairCreated(token1);
-  console.log(await getBalance(userAddress))
-  console.log(await getBalance2(userAddress))
-  console.log((addLiquidityAmount1).toString())
-  console.log((addLiquidityAmount2).toString())
-
+ 
   if (iscreated ) {
     try {
       const response = await fetch(getApiUrl(apiName1), {
@@ -375,7 +374,9 @@ const addLiquidityToPool = async (poolIndex: string) => {
         if (data.result === true) {
           console.log("Function call successful");
           setTxnStatus('Success');
-          addAllTokensToLiquidtyPool(poolIndex);
+          setSnackbarMessage('Transaction successful!');
+          setOpenSnackbar(true);
+    
         } else {
           console.error("Function call failed");
           setSnackbarMessage(`Failed to add ${apiName1} to the liquidity pool`);
@@ -433,7 +434,7 @@ async function addSecondToToLiquidityPool(poolIndex: string) {
       if (data.result === true) {
         console.log("Function call successful");
         setTxnStatus('Success');
-        addAllTokensToLiquidtyPool(poolIndex);
+      
       } else {
         console.error("Function call failed");
         setSnackbarMessage(`Failed to add ${apiName1} and ${tokenAddresses[addLiquidityToken2 as TokenKeys]} to the liquidity pool`);
@@ -464,7 +465,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
   let apiName2 = tokenAPIName[addLiquidityToken1 as APInames];
 
   try {
-    let argument_addLiquidity = `${token1}|${token2}|${amount1}|${amount2}|${poolIndex}`;
+    let argument_addLiquidity = `${token1}|${amount1}|${poolIndex}`;
     const response = await fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
@@ -486,10 +487,9 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
     if (response.ok) {
       const data = await response.json();
       if (data.status === true) {
+        addLiquidityToPool(poolIndex);
         console.log("Function call successful");
-        setTxnStatus('Success');
-        setSnackbarMessage('Transaction successful!');
-        setOpenSnackbar(true);
+       
       } else {
         console.error("Function call failed");
         setSnackbarMessage(`Failed to add ${apiName2} and ${apiName1} to the liquidity pool`);
