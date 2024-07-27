@@ -4,7 +4,7 @@ pragma solidity 0.8.0;
 
 
 
-interface IToronetLiquidityToken {
+interface IEspeesLiquidityToken {
     function balanceOf(address account) external view returns (uint256);
     function transfer(address recipient, uint256 amount) external returns (bool);
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
@@ -21,8 +21,8 @@ interface IToronetLiquidityToken {
 
 
 
-contract ToronetLiquidityToken is ERC20,Ownable {
-    constructor() ERC20("Toronet Liquidity Token", "TLT") Ownable(msg.sender){
+contract EspeesLiquidityToken is ERC20,Ownable {
+    constructor() ERC20("Espees Liquidity Token", "TLT") Ownable(msg.sender){
          _mint(address(this),  type(uint128).max);
     }
     function mint(address to, uint256 amount) public {
@@ -35,7 +35,7 @@ contract ToronetLiquidityToken is ERC20,Ownable {
     }
 }
 
-contract ToronetDex is Ownable{
+contract EspeesDex is Ownable{
     struct Pair {
         address tokenA;
         address tokenB;
@@ -83,10 +83,10 @@ contract ToronetDex is Ownable{
     event GainsClaimed(address indexed user, uint256 amount);
     event PoolCreated(address indexed poolAddress, string name, bytes32 pairHash);
 
-    IToronetLiquidityToken public liquidityToken;
+    IEspeesLiquidityToken public liquidityToken;
 
     constructor() Ownable(msg.sender) {
-            liquidityToken = IToronetLiquidityToken(0xC020729a3FCa5C81c8F8F84480E18d753D9dd768); // 
+            liquidityToken = IEspeesLiquidityToken(0xC020729a3FCa5C81c8F8F84480E18d753D9dd768); // 
         isAdmin[msg.sender] = true;
 
         isAdmin[(0xB2D7A98ED24cC8bDec8889c5D80dF130657dc9Ac)]; // τEGP (Egyptian Pound Stablecoin)
@@ -96,7 +96,7 @@ contract ToronetDex is Ownable{
        isAdmin[(0xc2ABcA28ba2FDfE62184cf316B48A984Fd75fE45)]; // τUSD (USD Stablecoin)
      isAdmin[ (0x5164a9F3C34E3b1aef58f6d176A6a95518A5DEEc)]; // τEURO (Euro Stablecoin)
      isAdmin[ (0xd0cC0a3b4FD64E26fDF69055b85b80e9e827b949)]; // τPOUND (Pound Stablecoin)
-        isAdmin[ (0xEa33965084B7DC09eCAa0B59aa972c81dDA556BD)]; // τETH (Bridged Ethereum on Toronet)
+        isAdmin[ (0xEa33965084B7DC09eCAa0B59aa972c81dDA556BD)]; // τETH (Bridged Ethereum on Espees)
         isAdmin[ (0x77A86E39E8d92d25b63C9C7DFFfc5351D8d1153C)]; // ESPEES
         isAdmin[(0x6c2A5ED4938CaC04F70A7ACF1ba1b1522de75811)]; // ASPR
 
@@ -163,7 +163,7 @@ function transfer(address _token, uint256 _amount) public {
     }
 
 
-     function addLiquidityToToronet(address _tokenA, uint256 _amountA) external {
+     function addLiquidityToEspees(address _tokenA, uint256 _amountA) external {
         uint256 _amountB = 0;
         address _tokenB = 0xc2ABcA28ba2FDfE62184cf316B48A984Fd75fE45;
     bytes32 pairHash = keccak256(abi.encodePacked(_tokenA, _tokenB));
@@ -193,7 +193,7 @@ function transfer(address _token, uint256 _amount) public {
  /*
  @dev users must have transfered _token  to the contract address before calling this function.
  */
-function swapTokensWithToronet(address _tokenA, address _tokenB, uint256 _amountIn,uint256 _amountOut) external {
+function swapTokensWithEspees(address _tokenA, address _tokenB, uint256 _amountIn,uint256 _amountOut) external {
     bytes32 pairHash = keccak256(abi.encodePacked(_tokenA, _tokenB));
     Pair storage pair = pairs[pairHash];
     require(pair.tokenA != address(0) && pair.tokenB != address(0), "Pair does not exist");

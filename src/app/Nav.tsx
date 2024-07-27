@@ -5,7 +5,7 @@ import AddLiquidity from './addLiquidity';
 import HomePage from './swapPage';
 import PoolDetails from './poolDetails';
 import './Nav.css'; // Import CSS file for styling
-import { tokenAddresses, Toronet_Dex_ABI, Toronet_Dex_Address } from './constants';
+import { tokenAddresses, Espees_Dex_ABI, Espees_Dex_Address } from './constants';
 import { ethers } from 'ethers';
 import { contract, fetchPoolDetails, getTokenSymbol } from '@/libs/poolDetails';
 import usePoolDetails from '@/hooks/usePoolDetails';
@@ -59,7 +59,7 @@ const Navigation = () => {
 
   return (
     <div className="container">
-      <h1 className="header">Toronet DEX</h1>
+      <h1 className="header">Espees DEX</h1>
       <div className="buttonContainer">
         <button
           onClick={togglePoolDetails}

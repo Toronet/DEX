@@ -1,11 +1,11 @@
-# Design of ToroNet DEX
+# Design of Espees DEX
 
 ## Project Overview
-The ToroNet DEX is a decentralized exchange built on the ToroNet blockchain, tailored specifically for Toronet stablecoins. It enables users to add liquidity, swap tokens, and claim gains from providing liquidity.
+The Espees DEX is a decentralized exchange built on the Espees blockchain, tailored specifically for Espees stablecoins. It enables users to add liquidity, swap tokens, and claim gains from providing liquidity.
 
 ## Key Features
 
-- **Token Ecosystem:** Exclusively supports Toronet stablecoins, facilitating seamless trading and liquidity provisioning within the ToroNet blockchain ecosystem.
+- **Token Ecosystem:** Exclusively supports Espees stablecoins, facilitating seamless trading and liquidity provisioning within the Espees blockchain ecosystem.
 
 - **Liquidity Management:** Users can add liquidity to existing token pairs. Pair creation, however, is restricted to administrators, ensuring controlled market expansion.
 
@@ -15,7 +15,7 @@ The ToroNet DEX is a decentralized exchange built on the ToroNet blockchain, tai
 
 - **Swap Fee:** Users are subject to a 5% fee during token swaps. This fee is integral to the economic model of the DEX and contributes to sustainability and incentive mechanisms.
 
-- **Immutable Ledger:** The contract acts as an immutable ledger, storing token pair data, liquidity amounts, and user balances securely on the ToroNet blockchain.
+- **Immutable Ledger:** The contract acts as an immutable ledger, storing token pair data, liquidity amounts, and user balances securely on the Espees blockchain.
 
 - **Gains Claiming:** Liquidity providers can claim gains based on their stake in the liquidity pool. This feature dynamically calculates gains, considering the liquidity provided and the applicable fee rate.
 

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { tokenAddresses, tokenAPIName, Toronet_Dex_Address, Toronet_Dex_ABI } from "./constants";
+import { tokenAddresses, tokenAPIName, Espees_Dex_Address, Espees_Dex_ABI } from "./constants";
 import { ethers } from "ethers";
 import { Snackbar, Slide, SnackbarContent, SlideProps } from "@material-ui/core";
 
@@ -40,7 +40,7 @@ const CreatePool = () => {
     }
     const messageToSign = "Signature";
     try {
-      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+      const response = await fetch('https://testnet.Espees.org/api/keystore/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -78,7 +78,7 @@ const CreatePool = () => {
       }
     } catch (error) {
       console.error('Error connecting to Toro Wallet:', error);
-      alert("Toronet Address Or Password is Incorrect. Please try again later.");
+      alert("Espees Address Or Password is Incorrect. Please try again later.");
     }
   };
 
@@ -92,7 +92,7 @@ const CreatePool = () => {
 
 
     function getApiUrl( apiName1: string) {
-      return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
+      return `https://testnet.Espees.org/api/currency/${apiName1}/cl`;
     }
 async function send ( apiName1: string){
   try {
@@ -106,7 +106,7 @@ async function send ( apiName1: string){
         params: [
           { name: "client", value: userAddress },
           { name: "clientpwd", value: userPassword },
-          { name: "to", value: Toronet_Dex_Address },
+          { name: "to", value: Espees_Dex_Address },
           { name: "val", value: (amount1).toString() },
         ],
       }),
@@ -123,7 +123,7 @@ catch{
         send(apiName1);
         send(apiName2);
       let argument_createPool = `${token1},${token2},${poolName},${amount1},${amount2},${swapFee},${feeReceiver}`;
-      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+      const response = await fetch('https://testnet.Espees.org/api/keystore/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,10 +133,10 @@ catch{
           params: [
             { name: "addr", value: userAddress },
             { name: "pwd", value: userPassword },
-            { name: "contractaddress", value: Toronet_Dex_Address },
+            { name: "contractaddress", value: Espees_Dex_Address },
             { name: "functionname", value: "createPool" },
             { name: "functionarguments", value: argument_createPool },
-            { name: "abi", value: Toronet_Dex_ABI },
+            { name: "abi", value: Espees_Dex_ABI },
           ],
         }),
       });
@@ -175,7 +175,7 @@ catch{
           onClick={connectToroWallet}
           className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
         >
-          {isConnected ? `Connected: ${shortAddress}` : "Connect To Toronet"}
+          {isConnected ? `Connected: ${shortAddress}` : "Connect To Espees"}
         </button>
       </div>
   

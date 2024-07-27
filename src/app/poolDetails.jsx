@@ -2,7 +2,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Toronet_Dex_Address, Toronet_Dex_ABI, tokenAddresses } from './constants';
+import { Espees_Dex_Address, Espees_Dex_ABI, tokenAddresses } from './constants';
 import { ethers } from 'ethers';
 import './PoolDetails.css';
 import usePoolDetails from '@/hooks/usePoolDetails';

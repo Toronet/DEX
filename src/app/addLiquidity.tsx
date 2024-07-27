@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { tokenAddresses, tokenAPIName, DEX_ADDRESS, Toronet_Dex_Address, Toronet_URI, Toronet_Dex_ABI } from "./constants";
+import { tokenAddresses, tokenAPIName, DEX_ADDRESS, Espees_Dex_Address, Espees_URI, Espees_Dex_ABI } from "./constants";
 import { ethers } from "ethers";
 import { Snackbar, Slide, SnackbarContent, SlideProps } from "@material-ui/core";
 
@@ -59,7 +59,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
     }
     const messageToSign = "Signature";
     try {
-      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+      const response = await fetch('https://testnet.Espees.org/api/keystore/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -98,18 +98,18 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
       }
     } catch (error) {
       console.error('Error connecting to Toro Wallet:', error);
-      alert("Toronet Address Or Password is Incorrect. Please try again later.");
+      alert("Espees Address Or Password is Incorrect. Please try again later.");
     }
   };
 
   function getApiUrl(apiName1: string) {
-    return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
+    return `https://testnet.Espees.org/api/currency/${apiName1}/cl`;
   }
 
   async function isPairCreated(token1: string) {
     let apiName1 = tokenAPIName[addLiquidityToken1 as APInames];
     let apiName2 = tokenAPIName[addLiquidityToken2 as APInames];
-    const contract = new ethers.Contract(Toronet_Dex_Address, Toronet_Dex_ABI, provider);
+    const contract = new ethers.Contract(Espees_Dex_Address, Espees_Dex_ABI, provider);
     console.log(token1)
   
 
@@ -170,7 +170,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
 
     try {
       let argument_addLiquidity = `${token1}|${amount1}`;
-      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+      const response = await fetch('https://testnet.Espees.org/api/keystore/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,10 +180,10 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
           params: [
             { name: "addr", value: userAddress },
             { name: "pwd", value: userPassword },
-            { name: "contractaddress", value: Toronet_Dex_Address },
-            { name: "functionname", value: "addLiquidityToToronet" },
+            { name: "contractaddress", value: Espees_Dex_Address },
+            { name: "functionname", value: "addLiquidityToEspees" },
             { name: "functionarguments", value: argument_addLiquidity },
-            { name: "abi", value: Toronet_URI },
+            { name: "abi", value: Espees_URI },
           ],
         }),
       });
@@ -229,7 +229,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
           params: [
             { name: "client", value: userAddress },
             { name: "clientpwd", value: userPassword },
-            { name: "to", value: Toronet_Dex_Address },
+            { name: "to", value: Espees_Dex_Address },
             { name: "val", value: (amount2 / 1e18).toString() },
           ],
         }),
@@ -295,7 +295,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
             params: [
               { name: "client", value: userAddress },
               { name: "clientpwd", value: userPassword },
-              { name: "to", value: Toronet_Dex_Address },
+              { name: "to", value: Espees_Dex_Address },
               { name: "val", value: (addLiquidityAmount1).toString() },
             ],
           }),
@@ -363,7 +363,7 @@ const addLiquidityToPool = async (poolIndex: string) => {
           params: [
             { name: "client", value: userAddress },
             { name: "clientpwd", value: userPassword },
-            { name: "to", value: Toronet_Dex_Address },
+            { name: "to", value: Espees_Dex_Address },
             { name: "val", value: (addLiquidityAmount1).toString() },
           ],
         }),
@@ -423,7 +423,7 @@ async function addSecondToToLiquidityPool(poolIndex: string) {
         params: [
           { name: "client", value: userAddress },
           { name: "clientpwd", value: userPassword },
-          { name: "to", value: Toronet_Dex_Address },
+          { name: "to", value: Espees_Dex_Address },
           { name: "val", value: (amount2 / 1e18).toString() },
         ],
       }),
@@ -466,7 +466,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
 
   try {
     let argument_addLiquidity = `${token1}|${amount1}|${poolIndex}`;
-    const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+    const response = await fetch('https://testnet.Espees.org/api/keystore/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -476,10 +476,10 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
         params: [
           { name: "addr", value: userAddress },
           { name: "pwd", value: userPassword },
-          { name: "contractaddress", value: Toronet_Dex_Address },
+          { name: "contractaddress", value: Espees_Dex_Address },
           { name: "functionname", value: "addLiquidity" },
           { name: "functionarguments", value: argument_addLiquidity },
-          { name: "abi", value: Toronet_URI },
+          { name: "abi", value: Espees_URI },
         ],
       }),
     });
@@ -519,9 +519,9 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
       <div style={{ marginBottom: '20px' }}>
         <button
           onClick={connectToroWallet}
-          className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+          className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ml-2"
         >
-          {isConnected ? `Connected: ${shortAddress}` : "Connect To Toronet "}
+          {isConnected ? `Connected: ${shortAddress}` : "Connect To Espees "}
         </button>
       </div>
 
@@ -530,7 +530,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
         <select
           value={addLiquidityToken1}
           onChange={(e) => setAddLiquidityToken1(e.target.value)}
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         >
           <option value="">Select Token</option>
           <option value="tEGB">tEGB</option>
@@ -549,7 +549,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
         {/* <select
           value={addLiquidityToken2}
           onChange={(e) => setAddLiquidityToken2(e.target.value)}
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         >
           <option value="">Select Token</option>
           <option value="tEGB">tEGB</option>
@@ -569,7 +569,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
           type="number"
           value={addLiquidityAmount1}
           onChange={(e) => setAddLiquidityAmount1(parseInt(e.target.value))}
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-4 bg-blue-400 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-75"
           placeholder="Enter Amount 1"
         />
       </div>
@@ -578,14 +578,14 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
           type="number"
           value={addLiquidityAmount2}
           onChange={(e) => setAddLiquidityAmount2(parseInt(e.target.value))}
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
           placeholder="Enter Amount 2"
         />
       </div> */}
       <button
          onClick={addLiquidity}
        
-        className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
+         className={`w-full py-2 px-4 bg-blue-400 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-75 ${isConnected ? "connected" : ""}`}
       >
         Add Liquidity
       </button>
@@ -611,7 +611,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
         <SnackbarContent
           message={snackbarMessage}
           style={{
-            backgroundColor: txnStatus === 'Success' ? 'green' : 'red',
+            backgroundColor: txnStatus === 'Success' ? 'blue' : 'red',
           }}
         />
       </Snackbar>

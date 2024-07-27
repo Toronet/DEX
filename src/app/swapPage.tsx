@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
 
-import { Toronet_Dex_Address, Toronet_Dex_ABI , Toronet_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD,exchangeRateName, ERC20_ABI} from "./constants";
+import { Espees_Dex_Address, Espees_Dex_ABI , Espees_URI,tokenAddresses, tokenAPIName, DEX_ADDRESS,DEX_PASSWORD,exchangeRateName, ERC20_ABI} from "./constants";
 
 import { ethers } from "ethers";
 import { Snackbar, Slide, SnackbarContent, SlideProps } from "@material-ui/core";
@@ -33,7 +33,7 @@ const HomePage: React.FC<HomePageProps> = ({ selectedPool }) => {
   const rpcURL = 'https://testnet.toronet.org/rpc/'
   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
 
-  const contract = new ethers.Contract(Toronet_Dex_Address,Toronet_Dex_ABI,provider)
+  const contract = new ethers.Contract(Espees_Dex_Address,Espees_Dex_ABI,provider)
 
 
 
@@ -95,7 +95,7 @@ const connectToroWallet = async () => {
   }
   const messageToSign = "Signature";
   try {
-    const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+    const response = await fetch('https://testnet.Espees.org/api/keystore/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -147,7 +147,7 @@ const connectToroWallet = async () => {
   
 
 function getApiUrl( apiName1: string) {
-  return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
+  return `https://testnet.Espees.org/api/currency/${apiName1}/cl`;
 }
 
   const recieveToken = async() =>{
@@ -237,7 +237,7 @@ let amountOut: number
     let amount = ((swapAmount)); // 5% fee
     try {
       const op = 'getexchangerates';
-      const baseUrl = 'https://testnet.toronet.org/api/query';
+      const baseUrl = 'https://testnet.Espees.org/api/query';
       const url = new URL(baseUrl);
       url.searchParams.append('op', op);
   
@@ -318,7 +318,7 @@ try{
               },
               {
                   "name": "to",
-                  "value": Toronet_Dex_Address
+                  "value": Espees_Dex_Address
               },
               {
                   "name": "val",
@@ -366,7 +366,7 @@ try{
   }
 
 
-  const updateSwapTokenInContract = async () => { // swap tokens on toronet // update information to the smart contract
+  const updateSwapTokenInContract = async () => { // swap tokens on Espees // update information to the smart contract
     
     let amount = ((swapAmount* 1e18));
     let amountOut = await getExchangeRates()
@@ -380,7 +380,7 @@ try{
     try {
 
     let argument_Swap=  `${token1}|${token2}|${amount}|${amountOut}`
-   const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+   const response = await fetch('https://testnet.Espees.org/api/keystore/', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -390,10 +390,10 @@ try{
         params: [
           { name: "addr", value: userAddress },
           { name: "pwd", value: userPassword },
-          { name: "contractaddress", value: Toronet_Dex_Address },
-          { name: "functionname", value: "swapTokensWithToronet" },
+          { name: "contractaddress", value: Espees_Dex_Address },
+          { name: "functionname", value: "swapTokensWithEspees" },
           { name: "functionarguments", value: argument_Swap },
-          { name: "abi", value: Toronet_URI },
+          { name: "abi", value: Espees_URI },
         ],
       }),
     });
@@ -433,7 +433,7 @@ console.log(poolIndex)
   //check for the balance
   const tokenContract = new ethers.Contract( tokenAddresses[swapFromToken as TokenKeys],ERC20_ABI,provider)
 
-  let balanceOf  =  await tokenContract.balanceOf(Toronet_Dex_Address);
+  let balanceOf  =  await tokenContract.balanceOf(Espees_Dex_Address);
 
   if (balanceOf<amountOut) {
     setSnackbarMessage(`Insufficient Balanace`);
@@ -467,7 +467,7 @@ console.log(poolIndex)
                 },
                 {
                     "name": "to",
-                    "value": Toronet_Dex_Address
+                    "value": Espees_Dex_Address
                 },
                 {
                     "name": "val",
@@ -512,14 +512,14 @@ console.log(poolIndex)
       console.error('Error:', error);
       return;  // Return early to stop further execution
   }
-  //Toronet_123
+  //Espees_123
     }
   }
 
 
 
 
-    const updateSwapTokenInContractToPool = async (poolIndex: string) => { // swap tokens on toronet // update information to the smart contract
+    const updateSwapTokenInContractToPool = async (poolIndex: string) => { // swap tokens on Espees // update information to the smart contract
 
      
       let _amountOut = await getExchangeRates();
@@ -549,7 +549,7 @@ let amountOutInEther = roundedAmountOutInWei;
       console.log(token1)
       console.log(poolIndex)
       console.log(userAddress)
-     const response = await fetch('https://testnet.toronet.org/api/keystore/', {
+     const response = await fetch('https://testnet.Espees.org/api/keystore/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -559,10 +559,10 @@ let amountOutInEther = roundedAmountOutInWei;
           params: [
             { name: "addr", value: userAddress },
             { name: "pwd", value: userPassword },
-            { name: "contractaddress", value: Toronet_Dex_Address },
+            { name: "contractaddress", value: Espees_Dex_Address },
             { name: "functionname", value: "swapTokens" },
             { name: "functionarguments", value: argument_Swap },
-            { name: "abi", value: Toronet_URI },
+            { name: "abi", value: Espees_URI },
           ],
         }),
       });
@@ -643,9 +643,9 @@ const previewAmount = async () => {
         <div style={{ marginBottom: '10px' }}>
           <button
             onClick={connectToroWallet}
-            className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+            className="w-full py-2 px-4 bg-blue-400 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-75"
           >
-            {isConnected ? `Connected: ${shortAddress}` : "Connect To Toronet "}
+            {isConnected ? `Connected: ${shortAddress}` : "Connect To Espees "}
           </button>
         </div>
 
@@ -655,7 +655,7 @@ const previewAmount = async () => {
             <select
               value={swapFromToken}
               onChange={(e) => setSwapFromToken(e.target.value)}
-              className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+              className="w-full py-2 px-4 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ml-2"
             >
               <option value="">Swap From</option>
               <option value="tEGB">tEGB</option>
@@ -673,7 +673,7 @@ const previewAmount = async () => {
             <select
               value={swapToToken}
               onChange={(e) => setSwapToToken(e.target.value)}
-              className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+              className="w-full py-2 px-4 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ml-2"
             >
               <option value="">Swap To</option>
               <option value="tEGB">tEGB</option>
@@ -693,21 +693,21 @@ const previewAmount = async () => {
             type="number"
             value={swapAmount}
             onChange={(e) => setSwapAmount(parseInt(e.target.value))}
-            className="w-full py-2 px-4 bg-green-100 hover:bg-green-200 text-green-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+            className="w-full py-2 px-4 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ml-2"
             placeholder="Enter Amount to Swap"
           />
 
 <div className="flex justify-between">
   <button
     onClick={swapToken}
-    className="py-1.5 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-1"
+    className="py-1.5 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ml-1"
   >
     Swap
   </button>
 
   <button
     onClick={previewAmount}
-    className="py-1.5 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-1"
+    className="py-1.5 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ml-1"
   >
     Preview
   </button>
@@ -737,7 +737,7 @@ const previewAmount = async () => {
           <SnackbarContent
             message={snackbarMessage}
             style={{
-              backgroundColor: txnStatus === 'Success' ? 'green' : 'red',
+              backgroundColor: txnStatus === 'Success' ? 'blue' : 'red',
             }}
           />
         </Snackbar>

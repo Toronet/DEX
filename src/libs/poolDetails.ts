@@ -1,14 +1,14 @@
 // "use server";
 
-import { tokenAddresses, Toronet_Dex_ABI, Toronet_Dex_Address } from "@/app/constants";
+import { tokenAddresses, Espees_Dex_ABI, Espees_Dex_Address } from "@/app/constants";
 import { ethers } from "ethers";
 
-const rpcURL = "https://testnet.toronet.org/rpc/";
+const rpcURL = "https://testnet.Espees.org/rpc/";
 const provider = new ethers.providers.JsonRpcProvider(rpcURL);
 // eslint-disable-next-line react-hooks/exhaustive-deps
 export const contract = new ethers.Contract(
-  Toronet_Dex_Address,
-  Toronet_Dex_ABI,
+  Espees_Dex_Address,
+  Espees_Dex_ABI,
   provider
 );
 
