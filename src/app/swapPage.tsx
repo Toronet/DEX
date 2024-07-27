@@ -95,7 +95,7 @@ const connectToroWallet = async () => {
   }
   const messageToSign = "Signature";
   try {
-    const response = await fetch('https://testnet.Espees.org/api/keystore/', {
+    const response = await fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -147,7 +147,7 @@ const connectToroWallet = async () => {
   
 
 function getApiUrl( apiName1: string) {
-  return `https://testnet.Espees.org/api/currency/${apiName1}/cl`;
+  return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
 }
 
   const recieveToken = async() =>{
@@ -237,7 +237,7 @@ let amountOut: number
     let amount = ((swapAmount)); // 5% fee
     try {
       const op = 'getexchangerates';
-      const baseUrl = 'https://testnet.Espees.org/api/query';
+      const baseUrl = 'https://testnet.toronet.org/api/query';
       const url = new URL(baseUrl);
       url.searchParams.append('op', op);
   
@@ -380,7 +380,7 @@ try{
     try {
 
     let argument_Swap=  `${token1}|${token2}|${amount}|${amountOut}`
-   const response = await fetch('https://testnet.Espees.org/api/keystore/', {
+   const response = await fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -549,7 +549,7 @@ let amountOutInEther = roundedAmountOutInWei;
       console.log(token1)
       console.log(poolIndex)
       console.log(userAddress)
-     const response = await fetch('https://testnet.Espees.org/api/keystore/', {
+     const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

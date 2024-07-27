@@ -3,7 +3,7 @@
 import { tokenAddresses, Espees_Dex_ABI, Espees_Dex_Address } from "@/app/constants";
 import { ethers } from "ethers";
 
-const rpcURL = "https://testnet.Espees.org/rpc/";
+const rpcURL = "https://testnet.toronet.org/rpc/";
 const provider = new ethers.providers.JsonRpcProvider(rpcURL);
 // eslint-disable-next-line react-hooks/exhaustive-deps
 export const contract = new ethers.Contract(

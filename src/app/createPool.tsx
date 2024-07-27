@@ -40,7 +40,7 @@ const CreatePool = () => {
     }
     const messageToSign = "Signature";
     try {
-      const response = await fetch('https://testnet.Espees.org/api/keystore/', {
+      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -92,7 +92,7 @@ const CreatePool = () => {
 
 
     function getApiUrl( apiName1: string) {
-      return `https://testnet.Espees.org/api/currency/${apiName1}/cl`;
+      return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
     }
 async function send ( apiName1: string){
   try {
@@ -123,7 +123,7 @@ catch{
         send(apiName1);
         send(apiName2);
       let argument_createPool = `${token1},${token2},${poolName},${amount1},${amount2},${swapFee},${feeReceiver}`;
-      const response = await fetch('https://testnet.Espees.org/api/keystore/', {
+      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

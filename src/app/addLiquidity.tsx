@@ -59,7 +59,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
     }
     const messageToSign = "Signature";
     try {
-      const response = await fetch('https://testnet.Espees.org/api/keystore/', {
+      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -103,7 +103,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
   };
 
   function getApiUrl(apiName1: string) {
-    return `https://testnet.Espees.org/api/currency/${apiName1}/cl`;
+    return `https://testnet.toronet.org/api/currency/${apiName1}/cl`;
   }
 
   async function isPairCreated(token1: string) {
@@ -170,7 +170,7 @@ const AddLiquidity: React.FC<AddLiquidityProps> = ({ selectedPool }) => {
 
     try {
       let argument_addLiquidity = `${token1}|${amount1}`;
-      const response = await fetch('https://testnet.Espees.org/api/keystore/', {
+      const response = await fetch('https://testnet.toronet.org/api/keystore/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -466,7 +466,7 @@ async function addAllTokensToLiquidtyPool(poolIndex: string) {
 
   try {
     let argument_addLiquidity = `${token1}|${amount1}|${poolIndex}`;
-    const response = await fetch('https://testnet.Espees.org/api/keystore/', {
+    const response = await fetch('https://testnet.toronet.org/api/keystore/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
