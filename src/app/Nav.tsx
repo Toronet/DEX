@@ -93,7 +93,7 @@ const Navigation = () => {
           throw new Error('Function not implemented.');
         }} />}
         {showCreatePool && <CreatePool />}
-        {showPoolDetails && <PoolDetails onPoolSelect={handlePoolSelect} poolDetailsList={poolDetailsList} />}
+        {showPoolDetails && <PoolDetails onPoolSelect={handlePoolSelect} />}
       </div>
     </div>
   );
