@@ -173,7 +173,7 @@ catch{
       <div style={{ marginBottom: '20px' }}>
         <button
           onClick={connectToroWallet}
-          className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 ml-2"
+          className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ml-2"
         >
           {isConnected ? `Connected: ${shortAddress}` : "Connect To Espees"}
         </button>
@@ -187,7 +187,7 @@ catch{
           value={poolName}
           onChange={(e) => setPoolName(e.target.value)}
           placeholder="Enter Pool Name"
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
       </div>
   
@@ -196,7 +196,7 @@ catch{
         <select
           value={poolToken1}
           onChange={(e) => setPoolToken1(e.target.value)}
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         >
           <option value="">Select Token</option>
           <option value="tEGB">tEGB</option>
@@ -217,7 +217,7 @@ catch{
         <select
           value={poolToken2}
           onChange={(e) => setPoolToken2(e.target.value)}
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         >
           <option value="">Select Token</option>
           <option value="tEGB">tEGB</option>
@@ -240,7 +240,7 @@ catch{
           value={initialAmount1}
           onChange={(e) => setInitialAmount1(Number(e.target.value))}
           placeholder="Enter Amount"
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
       </div>
   
@@ -251,7 +251,7 @@ catch{
           value={initialAmount2}
           onChange={(e) => setInitialAmount2(Number(e.target.value))}
           placeholder="Enter Amount"
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
       </div>
   
@@ -262,7 +262,7 @@ catch{
           value={swapFee}
           onChange={(e) => setSwapFee(Number(e.target.value))}
           placeholder="Enter Swap Fee Percentage"
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
       </div>
   
@@ -273,13 +273,13 @@ catch{
           value={feeReceiver}
           onChange={(e) => setFeeReceiver(e.target.value)}
           placeholder="Enter Fee Receiver Address"
-          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          className="w-full py-2 px-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
       </div>
   
       <button
         onClick={createPool}
-        className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
+        className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
       >
         Create Pool
       </button>
@@ -292,7 +292,7 @@ catch{
       >
         <SnackbarContent
           message={snackbarMessage}
-          style={{ backgroundColor: 'green' }}
+          style={{ backgroundColor: 'blue' }}
         />
       </Snackbar>
     </div>
