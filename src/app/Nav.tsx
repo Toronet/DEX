@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import CreatePool from './createPool';
 import AddLiquidity from './addLiquidity';
 import HomePage from './swapPage';
@@ -11,12 +11,12 @@ import { contract, fetchPoolDetails, getTokenSymbol } from '@/libs/poolDetails';
 import usePoolDetails from '@/hooks/usePoolDetails';
 
 const Navigation = () => {
-  const [showSwap, setShowSwap] = useState<boolean>(true); // Show swap page by default
+  const [showSwap, setShowSwap] = useState<boolean>(false); // Show swap page by default
   const [showCreatePool, setShowCreatePool] = useState<boolean>(false);
   const [selectedPool, setSelectedPool] = useState<any>(null); // Update type to match expected type
   const [error, setError] = useState<string | null>(null); // Update type to string | null
   const [showAddLiquidity, setShowAddLiquidity] = useState<boolean>(false);
-  const [showPoolDetails, setShowPoolDetails] = useState<boolean>(false);
+  const [showPoolDetails, setShowPoolDetails] = useState<boolean>(true); // Show Pool Details by default
 
   const { data: poolDetailsList, isLoading, mutate } = usePoolDetails();
   
@@ -62,6 +62,18 @@ const Navigation = () => {
       <h1 className="header">Toronet DEX</h1>
       <div className="buttonContainer">
         <button
+          onClick={togglePoolDetails}
+          className={showPoolDetails ? 'activeButton' : 'inactiveButton'}
+        >
+          Join Trading Pool
+        </button>
+        <button
+          onClick={toggleCreatePool}
+          className={showCreatePool ? 'activeButton' : 'inactiveButton'}
+        >
+          Create Trading Pool
+        </button>
+        <button
           onClick={toggleSwap}
           className={showSwap ? 'activeButton' : 'inactiveButton'}
         >
@@ -73,18 +85,6 @@ const Navigation = () => {
         >
           Add Liquidity
         </button>
-        <button
-          onClick={toggleCreatePool}
-          className={showCreatePool ? 'activeButton' : 'inactiveButton'}
-        >
-          Create Pool
-        </button>
-        <button
-          onClick={togglePoolDetails}
-          className={showPoolDetails ? 'activeButton' : 'inactiveButton'}
-        >
-          Pool Details
-        </button>
       </div>
       
       <div className="pageContainer">
@@ -93,7 +93,7 @@ const Navigation = () => {
           throw new Error('Function not implemented.');
         }} />}
         {showCreatePool && <CreatePool />}
-        {showPoolDetails && <PoolDetails onPoolSelect={handlePoolSelect}  />}
+        {showPoolDetails && <PoolDetails onPoolSelect={handlePoolSelect} poolDetailsList={poolDetailsList} />}
       </div>
     </div>
   );
@@ -104,5 +104,3 @@ function setAddLiquidityFunction(arg0: () => () => any) {
 }
 
 export default Navigation;
-
-//   {showPoolDetails && <PoolDetails onPoolSelect={handlePoolSelect} poolDetailsList={poolDetailsList} />}
